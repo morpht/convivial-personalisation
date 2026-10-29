@@ -1,0 +1,10 @@
+@startuml
+title Asynchronous source handling
+start
+:Start sources\nEach source can append values or return a promise.;
+:Wait for promises\nAll source promises in this profiler settle; errors are logged.;
+:Run processors\nAvailable values update temporary or stored state.;
+:Run destinations\nPublish this pipeline's configured results.;
+:Continue collection\nRun the next profiler; resolve ready after the final one.;
+stop
+@enduml

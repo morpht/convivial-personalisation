@@ -1,0 +1,143 @@
+CONVIVIAL PERSONALISATION
+PROPRIETARY LICENCE NOTICE
+
+Copyright (c) 2026 Morpht Pty. Ltd. (ABN 51 156 310 922; ACN 156 310 922)
+("Morpht"). All rights reserved.
+
+1. OWNERSHIP
+
+This software, including all source code, documentation, designs and
+associated materials (the "Software"), is the copyrighted work of Morpht and
+is protected under the Copyright Act 1968 (Cth) and international copyright
+treaties. Publication of the Software in a public repository does not place
+it in the public domain and does not waive any of Morpht's rights.
+
+2. NO LICENCE GRANTED
+
+Except as expressly set out in clause 3, no licence, right or permission of
+any kind is granted to you, whether by implication, estoppel or otherwise.
+You may not use, copy, modify, merge, publish, distribute, sublicense, sell,
+host, or create derivative works of the Software, in whole or in part,
+without a written licence from Morpht.
+
+3. PERMITTED ACTIVITY
+
+You may:
+
+  (a) view the Software on GitHub and, as permitted by GitHub's Terms of
+      Service, fork it within GitHub for the sole purpose of viewing it and
+      proposing contributions; and
+
+  (b) download and run the Software in a local or private test environment
+      for the sole purpose of evaluating whether to obtain a licence, for a
+      period of up to 30 days from first use ("Evaluation").
+
+Evaluation does not include use in production, on any publicly accessible
+website or application, or in any manner that collects, processes or tracks
+data relating to real end users. At the end of the Evaluation period you
+must either obtain a licence from Morpht or cease all use and delete all
+copies of the Software in your possession or control.
+
+Any other use requires a licence.
+
+4. OBTAINING A LICENCE
+
+Commercial and other licences are available from Morpht. To enquire,
+contact us at:
+
+  https://www.morpht.com/contact
+
+5. CONTRIBUTIONS
+
+By submitting any code, documentation or other material to this repository,
+you assign to Morpht all intellectual property rights in that contribution,
+and you warrant that the contribution is your original work and that you are
+entitled to make that assignment.
+
+6. NAMES AND BRANDING
+
+Nothing in this notice grants you any right to use the names "Morpht",
+"Convivial" or "Convivial Personalisation", or any associated logos or
+branding, other than to accurately identify the origin of the Software.
+
+7. PRIVACY AND DATA PROTECTION
+
+The Software is capable of tracking user behaviour and personalising
+content. If you use the Software in any way, you are solely responsible for
+ensuring that your use complies with all applicable privacy, data
+protection, electronic communications and consumer laws in every
+jurisdiction in which it is used or in which affected individuals are
+located, including (where applicable) the Privacy Act 1988 (Cth) and the
+Australian Privacy Principles, the EU and UK General Data Protection
+Regulation, the ePrivacy Directive, and United States federal and state
+privacy laws.
+
+Without limitation, you are solely responsible for:
+
+  (a) providing all required privacy notices and disclosures;
+  (b) obtaining and recording any consent required, including for cookies,
+      local storage and similar technologies;
+  (c) honouring individuals' rights to access, correct, delete or opt out of
+      the processing of their personal information; and
+  (d) the security of any data collected or processed through your use of
+      the Software.
+
+Unless agreed otherwise in a separate written agreement, Morpht is not a
+controller, processor, or service provider in respect of any data collected
+or processed through your use of the Software.
+
+8. NO WARRANTY
+
+To the maximum extent permitted by law, the Software is provided "AS IS" and
+"AS AVAILABLE", without warranty of any kind, express or implied, including
+without limitation any warranty of merchantability, fitness for a particular
+purpose, title, accuracy, or non-infringement. Morpht does not warrant that
+the Software will be error-free, uninterrupted, secure, or compliant with
+any privacy, data protection or other law in any jurisdiction.
+
+9. LIMITATION OF LIABILITY
+
+To the maximum extent permitted by law, Morpht and its directors, employees,
+contractors and agents will not be liable for any loss or damage whatsoever
+(including direct, indirect, incidental, special, consequential or exemplary
+damages, loss of data, loss of profits, business interruption, or regulatory
+fines or penalties) arising out of or in connection with the Software or any
+use of it, however caused and under any theory of liability, even if advised
+of the possibility of such loss.
+
+Where liability cannot be excluded, Morpht's total liability is limited, at
+Morpht's election, to resupplying the Software or paying the cost of having
+it resupplied.
+
+10. AUSTRALIAN CONSUMER LAW
+
+Nothing in this notice excludes, restricts or modifies any guarantee, right
+or remedy under the Australian Consumer Law or other legislation that cannot
+lawfully be excluded, restricted or modified. To the extent such a guarantee
+applies, Morpht's liability is limited as set out in clause 9.
+
+11. INDEMNITY
+
+You indemnify Morpht and its directors, employees, contractors and agents
+against all claims, losses, liabilities, fines, penalties and costs
+(including legal costs on a full indemnity basis) arising from:
+
+  (a) your use of the Software in breach of this notice;
+  (b) your breach of any law, including privacy and data protection law; or
+  (c) any claim by an individual, regulator or other third party relating to
+      data collected or processed through your use of the Software.
+
+12. GOVERNING LAW AND JURISDICTION
+
+This notice is governed by the laws of New South Wales, Australia. You
+submit to the exclusive jurisdiction of the courts of New South Wales and
+the courts entitled to hear appeals from them.
+
+13. GENERAL
+
+Morpht may seek injunctive relief and any other available remedy for
+unauthorised use of the Software. If any provision of this notice is held
+invalid or unenforceable, it is to be read down to the minimum extent
+necessary, and the remainder of this notice continues in full force and
+effect. Morpht may update this notice from time to time; the version in
+force is the version published in this repository.

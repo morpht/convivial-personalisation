@@ -2,7 +2,7 @@
 
 Processors update engine state or queue learning. They run synchronously in configured order with `(engine, profiler, processor, values)`. `storage_key` usually names an entry within the processor's namespace, not a full dotted path.
 
-For comma-separated metadata, [`temp_list`](#temp_list) prepares page vector fields and [`store_list`](#store_list) retains lists with a TTL. The [list processing guide](../configuration/lists.md) shows both. The [`profile`](#profile) processor learns the fast and slow vectors after the page fields have been collected.
+For comma-separated metadata, [`temp_list`](#temp_list) prepares page vector fields and [`store_list`](#store_list) retains lists with a TTL. The [list processing guide](../configuration/lists.md) shows both. The optional [`profile`](#profile) processor learns a named vector after the page fields have been collected. The builder chooses each profile name and its settings; the other processors can run without learned profiles.
 
 ## `accumulation`
 
@@ -106,4 +106,4 @@ Adds a configured value to a dimension when the pipeline has at least one input.
 
 `dimension` defaults to `stage`; `value` is required; `amount` defaults to `1`. This does not replace every existing stage or rewrite the learned vectors.
 
-See [fast and slow profiles](../concepts-and-tools/fast-and-slow-profiles.md), [suppression](../usage/suppression.md) and [storage and expiry](../concepts-and-tools/storage-and-expiry.md) for complete flows.
+See [profile decay and confidence](../concepts-and-tools/fast-and-slow-profiles.md), [suppression](../usage/suppression.md) and [storage and expiry](../concepts-and-tools/storage-and-expiry.md) for complete flows.

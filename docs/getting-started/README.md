@@ -1,18 +1,16 @@
 # Getting started
 
-Add the library to your site, or run the local examples to see how browsing changes recommendations. The source and browser bundle are in [morpht/convivial-personalisation](https://github.com/morpht/convivial-personalisation).
-
-To load the library on a page, serve `dist/bundle.js` from your site and include it before your initializer:
+Load the browser bundle, create an engine with your JSON configuration and call `collect()` to run its pipelines. Each pipeline chooses its sources, processors and destinations. Learned profiles and content ranking are optional.
 
 ```html
 <script src="/libraries/convivial-personalisation/bundle.js"></script>
 <script type="module" src="/js/personalisation.js"></script>
 ```
 
-`bundle.js` is already minified. These are example public paths; adjust them to your site. The installation guide below shows where to put the configuration and what to write in `personalisation.js`.
+These are example public paths; adjust them to your site. Load the bundle before the initializer. The library runs in the browser; Node.js is needed only to build it from source.
 
-- [Add the library to your site](../usage/browser.md): get the bundle, attach it to a page and start collection.
-- [Your first recommendation](installation.md): build the library, learn a gardening interest and compare learned results with fallback.
-- [Compare fast and slow recommendations](../usage/fast-and-slow.md): learn two pages five simulated minutes apart and see which interests remain in each profile.
+- [Add the library to your site](../usage/browser.md): get the bundle, attach it and start collection.
+- [Collect and publish a value](installation.md): a short initializer using a URL parameter, a dimension and a destination.
+- [Profiler configuration](../configuration/profilers.md): define your own pipelines.
 
-The local examples use synthetic content and require Git, Node.js 22.12 or newer, npm and a modern browser. Once the library is loaded, use [Usage](../usage/README.md) to build recommendation components. [Concepts and tools](../concepts-and-tools/README.md) explains the results, and [Reference](../reference/README.md) lists individual settings.
+Use [Usage](../usage/README.md) for integration examples and [Reference](../reference/README.md) for individual methods and plugin options.

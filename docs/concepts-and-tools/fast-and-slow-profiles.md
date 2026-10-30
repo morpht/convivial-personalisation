@@ -1,6 +1,8 @@
-# Fast and slow profiles
+# Profile decay and confidence
 
-Fast and slow profiles let recommendations respond to recent browsing while retaining longer-lived interests. Both learn from the same page information. The fast profile gives older visits less influence sooner; the slow profile keeps their influence for longer. The configured half-lives determine that difference.
+Each configured `profile` processor names a learned profile and sets its half-life. Builders can use one profile or several, or omit profile learning entirely. This page uses profiles named `fast` and `slow` to illustrate two half-lives; those names are configuration choices.
+
+Both example profiles learn from the same page information. The shorter half-life gives older visits less influence sooner, while the longer half-life retains their influence for longer.
 
 The [site configuration example](../configuration/site-example.md) uses a 60-second fast profile and a 3,600-second slow profile. The example below uses longer half-lives. Both are configuration choices; profile names have no built-in half-lives.
 

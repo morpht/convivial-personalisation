@@ -1,6 +1,8 @@
 # Collection and learning lifecycle
 
-Collection runs the configured profilers, each with sources, processors and destinations. It prepares the page metadata and queues learning into named profiles. Ranking can run after collection and before that learning is applied.
+Collection runs the configured profilers, each with sources, processors and destinations. Pipelines can update dimensions, store values and publish outputs without learning profiles. When `profile` processors are configured, they also queue learning from the collected page fields.
+
+The sequence below describes a configuration that includes profile learning and ranking. Ranking can run after collection and before that learning is applied.
 
 ![Collection runs metadata pipelines, then profile processors, resolves ready, allows ranking and folds the page into profiles.](../assets/diagrams/data-pipeline.svg)
 
@@ -8,7 +10,7 @@ Collection runs the configured profilers, each with sources, processors and dest
 
 ```javascript
 await engine.collect();
-const ranked = engine.rank(structuredClone(items), ['fast', 'slow'], 3);
+const topic = engine.published('preferred_topic');
 ```
 
 `collect()` returns a promise resolving to the engine, and assigns the same promise to `engine.ready`. On a newly constructed engine, `ready` starts as an already-resolved promise: it does not start collection. An integration must call `collect()` before consumers can use `ready` to wait for meaningful work.
@@ -19,7 +21,7 @@ Profilers run sequentially in authored object order, or ascending numeric profil
 
 Source errors are logged and collection continues with available values. Unknown plugins are skipped. Processor and destination exceptions are also caught and logged. A successful collection promise does not prove that every configured operation succeeded.
 
-## Prepare all metadata first
+## Prepare fields before profile learning
 
 `collect()` clears temporary values and current-page state at the start of each run. The first `profile` processor builds the page item and vector from the metadata available at that moment. Later profile processors reuse that page.
 

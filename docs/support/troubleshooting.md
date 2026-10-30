@@ -11,9 +11,9 @@ engine.debug = true;
 
 The version should be `1.0.0`. If the page has another version, inspect the served bundle and the site's asset cache. Enable Verbose browser-console messages and filter on the trace prefix `[convivial-profiler]`. Reproduce one collection or ranking operation; repeated collection can learn the same page more than once.
 
-## No fast or slow profile
+## A configured profile is missing
 
-Check that `profile` processors exist with those exact `storage_key` names, all metadata profilers run first, the page contains surviving vector features, and consent allows learning. Inspect `snapshot().page`, `storage.data.temp` and `snapshot().profiles`.
+Check that `profile` processors exist with the requested `storage_key` names, all metadata profilers run first, the page contains surviving vector features, and consent allows learning. Inspect `snapshot().page`, `storage.data.temp` and `snapshot().profiles`.
 
 Immediately after collection, learning may still be queued. Wait for the normal fold, or call `fold()` in an isolated diagnostic example. A configuration-hash mismatch makes old vectors unusable until new learning occurs.
 

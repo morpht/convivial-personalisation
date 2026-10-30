@@ -56,6 +56,6 @@ Place a final profiler after the choice and learned-category profilers. Its `bes
 
 Read the result with `engine.published('audience')`, including in memory-only operation. `bestpick.storage_keys` names published keys, unlike destinations that read internal storage paths.
 
-This published category does not automatically filter `rank()` results. A recommendation component can filter its candidate pool using the explicit choice, while the configured fast and slow vectors rank the remaining items. Keep audience keys consistent across collection and candidate fields.
+This published category does not automatically filter `rank()` results. A recommendation component can filter its candidate pool using the explicit choice, while any configured profile vectors rank the remaining items. Keep audience keys consistent across collection and candidate fields.
 
 After collecting a URL containing `?audience=students`, check that `engine.published('audience')` returns `'students'`. Once the stored choice has expired and collection runs again, the result should come from the learned category or the `general` default.

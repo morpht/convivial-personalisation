@@ -2,7 +2,7 @@
 title Collection and deferred learning
 start
 :Collect metadata\nSources fill values; processors write flat temp fields.;
-:Queue profile learning\nBuild one page vector; queue fast and slow folds.;
+:Queue profile learning\nBuild one page vector; queue configured profile folds.;
 :Resolve collection\ncollect() and ready resolve after asynchronous sources.;
 :Rank immediately\nA component can select from previous profile history.;
 :Fold the current page\nThe deferred timer learns and records the page as seen.;

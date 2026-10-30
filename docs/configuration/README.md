@@ -1,6 +1,6 @@
 # Configuration
 
-Configuration connects the metadata on your pages to the fields used for learning and ranking. Start with the collection pipelines and field names, then use the complete site example to see them together.
+Configuration defines which data to collect, how to process it and where to publish the results. Choose sources, processors and destinations for each pipeline. Add vector fields and named profile processors only when the site needs learned matching.
 
 - [Profiler configuration](profilers.md): order sources, processors and destinations.
 - [Fields and profile configuration](profile.md): use matching fields for page metadata and candidate rows.

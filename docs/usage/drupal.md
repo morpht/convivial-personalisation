@@ -1,6 +1,6 @@
 # Integrate with Drupal
 
-Drupal can supply profiler configuration, page metadata and candidate JSON. The browser library builds profiles and ranks rows; the component renders them.
+Drupal can supply configuration and inputs for collection, processing and publishing. For recommendation components, it can also supply candidate JSON for the browser library to rank. The example below assumes the initializer configures profiles named `fast` and `slow`; use your own configured names.
 
 This guide assumes access to the site's library attachment, initializer and candidate feed. Build the browser bundle in this repository, then attach it before the initializer using your site's normal asset workflow.
 

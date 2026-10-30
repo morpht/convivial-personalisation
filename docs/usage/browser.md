@@ -1,10 +1,10 @@
 # Add the library to your site
 
-Load the minified browser bundle with a script tag, then create one shared engine for the page. Recommendation components can reuse its collected metadata and learned profiles.
+Load the minified browser bundle with a script tag, then create one shared engine for the page. Components can read its published values and, when configured, use learned profiles for ranking. For a minimal initializer without profiles, use [collect and publish a value](../getting-started/installation.md).
 
 ## Before you start
 
-You need access to your site's public files and page template. This guide uses example paths under `/libraries/`, `/personalisation/` and `/js/`; adjust them to your site. The [real site configuration](../configuration/site-example.md) provides the field mapping used below.
+You need access to your site's public files and page template. This guide uses example paths under `/libraries/`, `/personalisation/` and `/js/`; adjust them to your site. The steps below use the [site configuration example](../configuration/site-example.md), which includes profile learning. Choose pipelines appropriate to your site.
 
 ## 1. Get the browser bundle
 
@@ -28,7 +28,7 @@ The build writes `dist/bundle.js`. Copy that file to your site's public director
 
 The example JSON wraps the engine configuration in `{ site, config }`. Set `site` to your own stable site ID. Review its field names, privacy settings and profile half-lives for your site. Serving the built bundle requires no Node.js runtime on the site.
 
-## 2. Attach the scripts and page metadata
+## 2. Attach the scripts and configured inputs
 
 Add this to the page's `<head>`. The first script loads the library; the module starts it in the next step. Keep this order and leave `async` off the library script so the constructor is available when the initializer runs.
 
@@ -40,7 +40,7 @@ Add this to the page's `<head>`. The first script loads the library; the module 
 <script type="module" src="/js/personalisation.js"></script>
 ```
 
-The sample configuration maps singular `topic` metadata into the `topics` vector field. Candidate rows need that same `topics` field. Add other configured metadata when the page provides it.
+The sample configuration uses metatags as one of its sources and maps singular `topic` metadata into the `topics` vector field. Candidate rows need that same `topics` field. Add other configured metadata when the page provides it.
 
 ## 3. Configure and start the engine
 

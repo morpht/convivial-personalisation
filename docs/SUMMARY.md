@@ -4,12 +4,11 @@
 
 * [Getting started](getting-started/README.md)
   * [Add the library to your site](usage/browser.md)
-  * [Your first recommendation](getting-started/installation.md)
-  * [Compare fast and slow recommendations](usage/fast-and-slow.md)
+  * [Collect and publish a value](getting-started/installation.md)
 
 * [Concepts and tools](concepts-and-tools/README.md)
   * [Profilers, profiles and dimensions](concepts-and-tools/profilers-and-profiles.md)
-  * [Fast and slow profiles](concepts-and-tools/fast-and-slow-profiles.md)
+  * [Profile decay and confidence](concepts-and-tools/fast-and-slow-profiles.md)
   * [Content vectors and matching](concepts-and-tools/content-vectors.md)
   * [Ranking and recommendations](concepts-and-tools/ranking.md)
   * [Collection and learning lifecycle](concepts-and-tools/data-pipelines.md)
@@ -24,6 +23,7 @@
 
 * [Usage](usage/README.md)
   * [Rank content](ranking/README.md)
+  * [Use profiles with different half-lives](usage/fast-and-slow.md)
   * [Build a recommendation block](usage/recommendations.md)
   * [Prioritise an audience choice](usage/audience.md)
   * [Suppress content after a completed goal](usage/suppression.md)

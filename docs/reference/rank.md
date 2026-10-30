@@ -31,7 +31,7 @@ engine.rank(structuredClone(items), { fast: 2, slow: 3 }, 5);
 engine.rank(structuredClone(items), [], 5);
 ```
 
-The first call allocates slots by confidence. The second requests fixed slots. The third requests fallback only. Profile names must have been learned by configured `profile` processors. Unavailable profiles relinquish their selection; unused capacity can be filled by fallback.
+The first call allocates slots by confidence. The second requests fixed slots. The third requests fallback only. `fast` and `slow` are the method's default requested names, but the engine does not configure or create profiles with those names automatically. Pass the names learned by your configured `profile` processors. Unavailable profiles relinquish their selection; unused capacity can be filled by fallback.
 
 An empty candidate array or zero count returns `[]`. An empty profile array still allows fallback. Distinct row objects with the same ID are not generally deduplicated. Deduplicate your feed first.
 
@@ -39,7 +39,7 @@ An empty candidate array or zero count returns `[]`. An empty profile array stil
 
 | Option | Default | Behaviour |
 | --- | --- | --- |
-| `block` | `'default'` | Identifies recorded results and diagnostic traces |
+| `block` | `'default'` | Optional component name for recorded results, diagnostic traces and explicit impression/click events; does not affect ranking |
 | `excludeCurrent` | `true` | Remove the current page by resolved ID |
 | `removeSeenItems` | `true` | Remove IDs viewed within the seen window |
 | `seenWindow` | `2592000` | Seen window in seconds (30 days) |
@@ -54,6 +54,12 @@ An empty candidate array or zero count returns `[]`. An empty profile array stil
 | `explain` | `true` | Add dimension-based `why` labels |
 
 `priorityWeight` is parsed as a number and clamped to `[0, 1]`; an invalid value uses `0.2`. `minSim` still applies to profile selection even when priority weight is `1`.
+
+## Block identifiers
+
+`block` is a name chosen by the integration, such as `'related-content'`. The engine remembers the latest result for each name and includes it in diagnostic traces. Use the same name in `impression(block, items)` and `click(block, item)` to identify the component in event records. If `impression()` omits its items argument, it uses that block's latest result.
+
+Use a distinct name for each component. Reusing a name replaces its recorded result; omitting it uses `'default'`. The value does not change scoring, filtering or ordering. `rank()` does not emit impressions or clicks automatically. See [event handling](../usage/recommendations.md#interpret-and-measure) for consent and analytics requirements.
 
 ## Priority choices
 

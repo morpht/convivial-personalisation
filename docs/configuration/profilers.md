@@ -18,7 +18,7 @@ A source's `type`, processor's `type` or destination's `type` selects the plugin
 
 ## Complete small configuration
 
-This configuration matches the metadata and candidate rows used throughout the guide:
+This example adds learned ranking to topic collection. It reads metatags and defines two profiles named `fast` and `slow`, with half-lives chosen by the builder. The names and the use of two profiles are optional configuration choices. For a pipeline without profile learning, see [collect and publish a value](../getting-started/installation.md).
 
 ```json
 {

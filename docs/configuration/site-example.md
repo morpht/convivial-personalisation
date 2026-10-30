@@ -73,7 +73,7 @@ No `config.order` is supplied, so pipelines run in authored order. The last two 
 }
 ```
 
-These half-lives are one minute and one hour. Profile names have no built-in half-lives; the `decay` values set them here. After five minutes, an isolated earlier contribution retains `1/32` of its fast strength and about `0.944` of its slow strength. See the [fast and slow walkthrough](../usage/fast-and-slow.md).
+These half-lives are one minute and one hour. Profile names have no built-in half-lives; the `decay` values set them here. After five minutes, an isolated earlier contribution retains `1/32` of its fast strength and about `0.944` of its slow strength. See the [profile configuration example](../usage/fast-and-slow.md).
 
 ## Published choices and rank inputs
 

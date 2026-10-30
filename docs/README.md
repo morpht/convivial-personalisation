@@ -2,29 +2,30 @@
 
 *Library version 1.0.0*
 
-Clientside personalisation engine for building profiles and ranking content.
+Convivial Personalisation is a browser library for collecting visitor context, processing it and making the results available to site components.
 
-Convivial Personalisation learns a visitor's interests from page metadata. The site supplies candidate content, and the library uses the visitor's fast and slow profiles to choose recommendations.
+The library collects data from metatags, URL parameters, cookies, document content, browser language, time and HTTP resources. It can retain state in local storage and read back published values. Builders define which inputs to collect and how to use them in JSON configuration.
 
-A visitor reading gardening pages builds an interest in gardening. If they later read about transport, the fast profile responds to that change while the slow profile retains more of the earlier interest. The site can use both when choosing recommendations.
+## What it does
 
-This guide is for developers and site builders:
+- Collect and transform values through configurable sources and processors.
+- Count interests in dimensions such as topics or audiences, record page views and searches, and store values with expiry.
+- Publish values to local storage or cookies, fill form fields and emit data-layer events through destinations.
+- Optionally learn named profiles and use them to rank candidate content supplied by the site.
 
-- [Getting started](getting-started/README.md): add the library to your site or try the local examples.
-- [Concepts and tools](concepts-and-tools/README.md): how collection, profiles, matching, storage and consent work together.
-- [Configuration](configuration/README.md): connect page metadata to the fields used for learning and ranking.
-- [Usage](usage/README.md): rank content, build recommendation blocks and integrate with Drupal.
-- [Reference](reference/README.md): JavaScript methods, `rank()` options, sources, processors and destinations.
+Collection, dimensions and destinations work without learned profiles. When a site uses profiles, the builder chooses their names, number and learning settings. Persistence, cookie publication and analytics follow the configured consent controls.
+
+## Use the guide
+
+- [Getting started](getting-started/README.md): load the library, configure a pipeline and use its output.
+- [Concepts and tools](concepts-and-tools/README.md): collection, dimensions, optional profiles, storage and consent.
+- [Configuration](configuration/README.md): define sources, processors, destinations and optional learning settings.
+- [Usage](usage/README.md): publish audience choices, rank content and integrate with Drupal.
+- [Reference](reference/README.md): JavaScript methods, options and built-in plugins.
 - [Support](support/README.md): diagnose unexpected results and get help from Morpht.
 
 ## Conventions
 
 - Code names and settings are written as `rank()`, `profile.fields` and `temp.topics`.
-- Button labels are written in **bold**. Commands run from the repository root unless stated otherwise.
+- Commands run from the repository root unless stated otherwise.
 - Durations are in seconds unless another unit is given. Example values are identified separately from library defaults.
-
-## Examples
-
-Start with the [gardening example](getting-started/installation.md), then compare fast and slow profiles in the [cats, dogs and birds example](usage/fast-and-slow.md). Both use synthetic content, keep profile data in memory and disable analytics.
-
-The examples run locally with Node.js 22.12 or newer and npm. Drupal is needed only for the [Drupal integration](usage/drupal.md).

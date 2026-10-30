@@ -2,7 +2,7 @@
 
 A component supplies candidates, waits for the engine, ranks the rows and renders them in returned order. Keep profile learning in the site's initializer so every component shares one collected page state.
 
-The [fast and slow example](fast-and-slow.md) demonstrates ranking with a complete site configuration and candidate feed.
+This example assumes the initializer configures profiles named `fast` and `slow`. Substitute your own configured names, or pass `[]` for fallback only. See [profiles with different half-lives](fast-and-slow.md) for one configuration pattern.
 
 ## Before you start
 
@@ -40,13 +40,13 @@ Because fetching is asynchronous, current-page learning may already have folded 
 
 ## Choose an allocation
 
-For a mix of recent and established interests, request `['fast', 'slow']`. To request two results from fast and one from slow, use `{ fast: 2, slow: 1 }` with count `3`. Similar profile directions may merge; a missing profile cannot fill its requested slots.
+When those profiles have been configured with different half-lives, request `['fast', 'slow']` for a mix of recent and established interests. To request two results from fast and one from slow, use `{ fast: 2, slow: 1 }` with count `3`. Similar profile directions may merge; a missing profile cannot fill its requested slots.
 
 Use `fallback: 'none'` only when the component can handle fewer results. The default fallback helps new visitors receive content before useful profiles exist.
 
 ## Interpret and measure
 
-`rank()` stores the last result under the block name, but does not emit an impression. Call `impression()` after rendering and `click()` on actual interaction. Events require granted consent and enabled analytics. The library supplies local data-layer events; your analytics integration determines how to consume them.
+`block` is an optional component identifier chosen by your integration, here `'related-content'`. It defaults to `'default'` and has no effect on scoring or order. `rank()` stores the latest result under that name for diagnostics and later event calls; it does not emit an impression. Call `impression()` after rendering and `click()` on actual interaction. Events require granted consent and enabled analytics. The library supplies local data-layer events; your analytics integration determines how to consume them.
 
 Give each block a distinct name so diagnostics and event records identify the intended component. Keep the candidate order meaningful because it supplies the default priority and fallback order.
 

@@ -38,7 +38,7 @@ A field suppression checks its ID portion in `id|Label`; it does not match the d
 }
 ```
 
-`advance` adds a value to a dimension when the pipeline has input. It does not automatically change or subtract from fast and slow vectors. A `suppress` processor can also use `dimension_sub` and `amount` to reduce a corresponding dimension counter.
+`advance` adds a value to a dimension when the pipeline has input. It does not automatically change or subtract from learned profile vectors. A `suppress` processor can also use `dimension_sub` and `amount` to reduce a corresponding dimension counter.
 
 ## Inspect and clear
 

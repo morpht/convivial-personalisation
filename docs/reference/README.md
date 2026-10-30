@@ -1,6 +1,6 @@
 # Reference
 
-Look up method signatures, default values and plugin options. For a guided first run, use [Getting started](../getting-started/README.md); for integration steps, use [Usage](../usage/README.md).
+Look up method signatures, default values and plugin options. For installation and a short collection example, use [Getting started](../getting-started/README.md); for integration steps, use [Usage](../usage/README.md).
 
 - [JavaScript API](api.md): construct the engine and call its methods.
 - [rank() arguments and options](rank.md): choose profiles, result counts and ranking controls.

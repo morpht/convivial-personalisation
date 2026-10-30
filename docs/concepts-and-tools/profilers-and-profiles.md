@@ -1,8 +1,8 @@
 # Profilers, profiles and dimensions
 
-Personalisation uses three related ideas. A **profiler** collects information from a page or browser. A **profile** learns interests from that information. A **dimension** counts named categories, such as topics or audiences.
+A **profiler** is a configured pipeline of sources, processors and destinations. A **dimension** counts named categories, such as topics or audiences. A learned **profile** represents interests for content matching and is optional.
 
-On a gardening page, a profiler can read the topic, the fast and slow profiles can learn from it, and the topics dimension can add one to its gardening count. Ranking uses the learned profiles; a component that needs the leading topic can use the dimension.
+For example, a profiler can read a topic from a URL parameter, add to the topics dimension and publish its leading value. A site can use that value without creating a learned profile. Adding a `profile` processor enables learning for ranking.
 
 A learned profile is stored as a vector: a numeric representation used to compare interests with content.
 
@@ -13,7 +13,7 @@ A learned profile is stored as a vector: a numeric representation used to compar
 | Processor | Profiler's `processors` | `temp_list` writes page topics; `profile` learns a vector |
 | Destination | Profiler's `destinations` | `top` publishes the strongest audience |
 | Page metadata | `storage.data.temp` | `topics: 'gardening,transport'` |
-| Profile | `storage.data.profiles.<name>` | `fast` or `slow`, with vector and half-life |
+| Profile | `storage.data.profiles.<name>` | `interests`, with vector and half-life |
 | Dimension | `storage.data.dimensions.<name>` | `topics: { gardening: 3, transport: 1 }` |
 | Published value | Flat key read by `engine.published()` | `selected_audience: 'students'` |
 
@@ -21,7 +21,7 @@ A learned profile is stored as a vector: a numeric representation used to compar
 
 A metadata profiler can use both `temp_list` and `dimension` processors. The temporary values supply fields to the vector builder. The counters supply category leaders for `top` and `tops` destinations and matching labels in ranked items' `why` arrays.
 
-After all metadata has been collected, a profiler with two `profile` processors can queue the same page vector for `fast` and `slow`. Each profile keeps its own half-life and accumulation. The profile names are configuration choices; the engine does not create them simply because a ranking call asks for them.
+When learning is configured, place its `profile` processors after the pipelines that collect the page fields. Each processor queues the page vector for the name in its `storage_key`, with its own half-life and accumulation. The builder chooses the profile names and number of profiles; a ranking call does not create them.
 
 ## Profile vectors and dimension counters
 
@@ -29,4 +29,4 @@ Named profiles decay over time and compare their vectors with candidate vectors.
 
 Profile confidence is the remaining vector magnitude, capped at one. Dimension confidence is the leading counter's margin over the second counter, divided by the leading counter. They answer different questions and are not probabilities.
 
-Use [fast and slow profiles](fast-and-slow-profiles.md) for ranking behaviour and [audience choices](../usage/audience.md) for publishing a category value.
+Use [profile decay and confidence](fast-and-slow-profiles.md) for ranking behaviour and [audience choices](../usage/audience.md) for publishing a category value.

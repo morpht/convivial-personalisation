@@ -1,6 +1,6 @@
 # Rank content
 
-Use `rank()` to select recommendations from a candidate feed using the visitor's fast and slow profiles.
+Use `rank()` to select recommendations from a candidate feed. Pass the profile names defined by your configuration, or `[]` for fallback only. The examples below assume profiles named `fast` and `slow` have been configured.
 
 ```javascript
 const engine = window.convivialPersonalisation;
@@ -12,12 +12,14 @@ const recommendations = engine.rank(structuredClone(items), ['fast', 'slow'], 3,
 
 The initializer must already have started collection. `items` is a flat array of candidate rows using the configured field names. `rank()` returns synchronously, modifies the row objects and supplies the display order. Clone your original feed when another component needs it unchanged.
 
+`block` is an optional component name for recorded results, diagnostics and explicit impression or click calls. It defaults to `'default'` and does not affect ranking. See [block identifiers](../reference/rank.md#block-identifiers).
+
 ## Choose your next step
 
 - [Ranking and recommendations](../concepts-and-tools/ranking.md): filtering, confidence, slots, scoring and fallback.
 - [rank() arguments and options](../reference/rank.md): the complete signature, defaults and returned fields.
 - [Build a recommendation block](../usage/recommendations.md): fetch, rank, render and record interactions.
-- [Compare fast and slow recommendations](../usage/fast-and-slow.md): an example using 60-second and 3,600-second profile half-lives.
+- [Use profiles with different half-lives](../usage/fast-and-slow.md): an example using 60-second and 3,600-second profile half-lives.
 - [Real site configuration](../configuration/site-example.md): map metadata, temporary fields and candidate rows correctly.
 
 ## Choose which profiles fill the block

@@ -15,7 +15,7 @@ Add this learning pipeline after the profilers that collect the [page fields](..
 }
 ```
 
-These values give previous contributions a half-life of 60 seconds and 3,600 seconds respectively. Both profiles learn the same collected page. The names impose no behaviour; `decay` determines how quickly earlier contributions lose influence. These are also the values used in the [site configuration example](../configuration/site-example.md).
+These values give previous contributions a half-life of 60 seconds and 3,600 seconds respectively. Both profiles learn the same collected page. The names impose no behaviour; `decay` determines how quickly earlier contributions lose influence.
 
 ## Rank with the configured profiles
 
@@ -33,4 +33,4 @@ The first two calls select with one profile each. The third requests two result 
 
 As browsing interests change, the shorter half-life gives recent pages greater influence. The two calls can still return the same content, especially after a single page or when candidates match both profiles. Before usable learning exists, eligible candidates are returned as fallback.
 
-See [profile decay and confidence](../concepts-and-tools/fast-and-slow-profiles.md) for the calculation, [collection timing](../concepts-and-tools/data-pipelines.md) for when learning is applied, and [rank() options](../reference/rank.md) for selection controls.
+See [profile decay and confidence](../concepts-and-tools/fast-and-slow-profiles.md) for these settings, [collection timing](../concepts-and-tools/data-pipelines.md) for when learning is applied, and [rank() options](../reference/rank.md) for selection controls.

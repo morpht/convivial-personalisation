@@ -3,7 +3,7 @@
 ```javascript
 const engine = window.convivialPersonalisation;
 await engine.ready;
-const ranked = engine.rank(structuredClone(items), ['fast', 'slow'], 3, {
+const ranked = engine.rank(structuredClone(items), ['interests'], 3, {
   block: 'related-content'
 });
 ```
@@ -23,11 +23,11 @@ engine.rank(items, profiles = ['fast', 'slow'], count = 5, options = {})
 | `count` | Maximum number of results; use a non-negative integer |
 | `options` | Controls below; omitted options use their defaults |
 
-The engine supplies its configuration, learned vectors, current-page ID, seen history, suppressions and interests to the ranking calculation.
+Pass the names of profiles configured by the site. The call above uses `interests` from the [configuration example](../configuration/site-example.md).
 
 ```javascript
-engine.rank(structuredClone(items), ['fast', 'slow'], 5);
-engine.rank(structuredClone(items), { fast: 2, slow: 3 }, 5);
+engine.rank(structuredClone(items), ['interests'], 5);
+engine.rank(structuredClone(items), { interests: 5 }, 5);
 engine.rank(structuredClone(items), [], 5);
 ```
 
@@ -49,7 +49,7 @@ An empty candidate array or zero count returns `[]`. An empty profile array stil
 | `prior` | `'order'` | Non-personal priority: order, recency, editorial, none, or function |
 | `priorityWeight` | `0.2` | Priority's score share; remaining share is similarity |
 | `recencyHalfLife` | `2592000` | Half-life in seconds for recency priority |
-| `fallback` | `'order'` | Fill remaining slots by prior times demotion; `'none'` disables padding |
+| `fallback` | `'order'` | Fill remaining slots using candidate priority and demotion; `'none'` disables padding |
 | `diversify` | `true` | When more than two rows are selected by profiles, reorder them using the first configured key field other than `type` or `profile_type`; fallback rows are appended afterwards |
 | `explain` | `true` | Add dimension-based `why` labels |
 
@@ -63,15 +63,15 @@ Use a distinct name for each component. Reusing a name replaces its recorded res
 
 ## Priority choices
 
-| `prior` | Calculation |
+| `prior` | Behaviour |
 | --- | --- |
-| `'order'` | First original input row is 1, last is 0; a single row is 1. Filtering does not renumber it. |
+| `'order'` | Prefer earlier rows in the supplied feed. |
 | `'recency'` | Uses the first available `changed`, `updated`, `created`, or `date`; numeric timestamps are Unix seconds. Missing or unusable dates receive 0.5. |
-| `'editorial'` | `1 / (1 + max(0, weight))`; lower numeric row weights win. Invalid weights receive 0.5. |
-| `'none'` | Constant 0.5. Set `priorityWeight: 0` for similarity-only scoring. |
+| `'editorial'` | Prefer lower numeric row `weight` values. Invalid weights receive neutral priority. |
+| `'none'` | Neutral priority. Set `priorityWeight: 0` for similarity-only scoring. |
 | Function | `(item, index, total) => number`, interpreted as a priority between 0 and 1 |
 
-Fallback uses prior times demotion, independent of `priorityWeight`. Choosing `prior: 'recency'` can therefore change fallback order even when `fallback` remains `'order'`.
+Fallback uses candidate priority and demotion, independent of `priorityWeight`. Choosing `prior: 'recency'` can therefore change fallback order even when `fallback` remains `'order'`.
 
 ## Returned rows
 
@@ -80,10 +80,10 @@ Fallback uses prior times demotion, independent of `priorityWeight`. Choosing `p
 | `id` | Resolved string identifier |
 | `profile` | Selecting profile name or `'fallback'` |
 | `sim` | Cosine similarity, or null for fallback |
-| `score` | Weighted score for a match, or prior times demotion for fallback |
+| `score` | Ranking score; use `pos` for final display order |
 | `pos` | One-based final display position |
 | `why` | Matching dimension labels when explanations are enabled |
 
-Original display fields remain. The input array's objects are mutated; a new array is returned. Internal temporary ranking fields are removed. Reusing already-ranked objects with `explain: false` does not clear an earlier `why` field, so clone clean feed rows for each ranking run.
+Original display fields remain. The input array's objects are mutated; a new array is returned. Reusing already-ranked objects with `explain: false` does not clear an earlier `why` field, so clone clean feed rows for each ranking run.
 
-Render the returned order. Sequential profile selections, variety reordering and fallback mean it is not a global score sort. [Ranking concepts](../concepts-and-tools/ranking.md) explain the process.
+Render the returned order. Sequential profile selections, variety reordering and fallback mean it is not a global score sort. See [ranking behaviour](../concepts-and-tools/ranking.md).

@@ -11,7 +11,7 @@ Use `temp_list` and `store_list` for sources that return comma-separated or repe
 | `store` | `store.<key>.value` | Each input replaces the previous one; last input wins | Shared TTL helper |
 | `store_list` | `store.<key>.value` | Parsed list joined with commas | Explicit numeric TTL; `-1` means one year |
 
-Both list processors split comma strings, accept arrays, trim entries and omit empty entries. They preserve duplicates and input order. Neither creates a named fast or slow profile on its own; `profile` processors perform that learning later.
+Both list processors split comma strings, accept arrays, trim entries and omit empty entries. They preserve duplicates and input order. Profile learning is configured separately through `profile` processors.
 
 ## Collect page topics and retain a recent list
 
@@ -43,7 +43,7 @@ For `<meta name="topic" content=" topic-ai, , topic-personalisation ">`, the res
 
 The dotted keys above are storage read paths. Page learning reads the flat temporary `topics` value at `temp.topics`. Consumers read the published recent list through `engine.published('topics_recent')`.
 
-The [real site configuration](site-example.md) uses `temp_list` for page fields and `store` for individual values. The example above adds `store_list` to retain the topic list too.
+The [configuration example](site-example.md) uses `temp_list` for page topics. Add `store_list` when those values should remain available between collections.
 
 ## Retention details
 

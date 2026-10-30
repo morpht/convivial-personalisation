@@ -38,7 +38,7 @@ A page-audience profiler can combine `temp_list` with `dimension` using `storage
 }
 ```
 
-The confidence threshold here measures the leading dimension's margin, not fast or slow profile confidence. Dimension counts do not automatically decay.
+The confidence threshold here measures the leading dimension's margin over the next category. Dimension counts do not automatically decay.
 
 ## Give the explicit choice precedence
 

@@ -16,48 +16,20 @@ The engine accepts one configuration object with `profilers`, `profile`, `privac
 
 A source's `type`, processor's `type` or destination's `type` selects the plugin. Plugin-specific options sit beside `type`.
 
-## Complete small configuration
+## Define a pipeline
 
-This example adds learned ranking to topic collection. It reads metatags and defines two profiles named `fast` and `slow`, with half-lives chosen by the builder. The names and the use of two profiles are optional configuration choices. For a pipeline without profile learning, see [collect and publish a value](../getting-started/installation.md).
+Each entry under `config.profilers` can have sources, processors and destinations. For example, this pipeline collects the document title into a temporary field:
 
 ```json
 {
-  "profile": {
-    "fields": { "title": 3, "topics": 4 },
-    "text_fields": ["title"],
-    "id_field": "nid",
-    "dims": 256
-  },
-  "analytics": { "events": false },
-  "profilers": {
-    "page_id": {
-      "sources": [{ "type": "meta", "attribute_name": "nid" }],
-      "processors": [{ "type": "temp", "storage_key": "nid" }]
-    },
-    "page_title": {
-      "sources": [{ "type": "meta", "attribute_name": "title" }],
-      "processors": [{ "type": "temp", "storage_key": "title" }]
-    },
-    "page_topics": {
-      "sources": [{ "type": "meta", "attribute_name": "topics" }],
-      "processors": [
-        { "type": "temp_list", "storage_key": "topics" },
-        { "type": "dimension", "storage_key": "topics", "normalize": true }
-      ]
-    },
-    "learn": {
-      "processors": [
-        { "type": "profile", "storage_key": "fast", "decay": 86400 },
-        { "type": "profile", "storage_key": "slow", "decay": 31536000 }
-      ]
-    }
+  "page_title": {
+    "sources": [{ "type": "document_part", "part": "title" }],
+    "processors": [{ "type": "temp", "storage_key": "title" }]
   }
 }
 ```
 
-All metadata is available before `learn`. The `profile` processors build the learned profiles from the assembled page item. They ignore their pipeline's source list. Asking `rank()` for a profile does not create it.
-
-The runnable `example/config.js` in this repository uses this configuration. Its test checks that the copy here remains identical.
+Place it inside `config.profilers`. Add only the processors and destinations the site needs. See the [configuration example](site-example.md) for a small downloadable setup with optional profile learning.
 
 ## Publishing a value
 

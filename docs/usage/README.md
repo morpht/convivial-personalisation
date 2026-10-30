@@ -9,4 +9,4 @@ Connect personalisation to your content and visitor actions. These guides assume
 - [Suppress content after a completed goal](suppression.md): exclude or demote matching recommendations for a chosen duration.
 - [Integrate with Drupal](drupal.md): reuse the site's engine and align page metadata with candidate fields.
 
-The [real site configuration](../configuration/site-example.md) shows the complete field mapping. Use the [rank() reference](../reference/rank.md) when you need an option's exact behaviour or default.
+The [configuration example](../configuration/site-example.md) shows a small field mapping and optional profile. Use the [rank() reference](../reference/rank.md) when you need an option's exact behaviour or default.

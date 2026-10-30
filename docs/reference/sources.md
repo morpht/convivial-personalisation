@@ -2,6 +2,8 @@
 
 Sources append inputs to a pipeline's shared values array. Their function signature is `(engine, profiler, source, values)`. A source may return a promise; processors wait for all sources in that pipeline.
 
+For saved local-storage values, use `engine.published()` in a [custom source](api.md#useplugin). The built-in sources below cover other common inputs.
+
 ## `acceptlang`
 
 Reads the browser language, preserving the full tag such as `en-AU`. Falls back to `en`.

@@ -90,9 +90,9 @@ Writes non-empty inputs into a flat temporary field. A single input is retained;
 
 ## `profile`
 
-Builds the current page vector from collected temporary metadata and queues it for a named learned profile.
+Learns interests from collected page fields for a named profile.
 
-`storage_key` (or `name`): profile name. `decay`: half-life in seconds; zero creates a new profile without decay but does not clear an existing profile's stored half-life. `weight`: engagement contribution, default `1`. The first profile processor builds the page once; all metadata must be ready first. It reads the assembled page and ignores its pipeline's source values. Queued folds honour consent and learning exclusions.
+`storage_key` (or `name`): profile name. `decay`: half-life in seconds; zero creates a new profile without decay but does not clear an existing profile's stored half-life. `weight`: engagement contribution, default `1`. Collect all page fields before this processor. It uses those fields rather than its pipeline's source values. Learning honours consent and configured exclusions.
 
 ## `suppress`
 

@@ -2,9 +2,9 @@
 
 *Library version 1.0.0*
 
-Convivial Personalisation is a browser library for collecting visitor context, processing it and making the results available to site components.
+Clientside personalisation engine for building profiles and ranking content.
 
-The library collects data from metatags, URL parameters, cookies, document content, browser language, time and HTTP resources. It can retain state in local storage and read back published values. Builders define which inputs to collect and how to use them in JSON configuration.
+Convivial Personalisation uses data from many sources, including metatags, URL parameters, cookies, saved values in local storage, page content and HTTP resources. Builders choose which inputs to collect, how to process them and where to publish the results through JSON configuration.
 
 ## What it does
 
@@ -13,7 +13,7 @@ The library collects data from metatags, URL parameters, cookies, document conte
 - Publish values to local storage or cookies, fill form fields and emit data-layer events through destinations.
 - Optionally learn named profiles and use them to rank candidate content supplied by the site.
 
-Collection, dimensions and destinations work without learned profiles. When a site uses profiles, the builder chooses their names, number and learning settings. Persistence, cookie publication and analytics follow the configured consent controls.
+Profiles are optional. The builder chooses their names, number and settings when the site needs learned content matching. Collection, dimensions and destinations also work independently. Persistence, cookie publication and analytics follow the configured consent controls.
 
 ## Use the guide
 

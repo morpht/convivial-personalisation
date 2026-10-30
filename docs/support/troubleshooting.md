@@ -15,7 +15,7 @@ The version should be `1.0.0`. If the page has another version, inspect the serv
 
 Check that `profile` processors exist with the requested `storage_key` names, all metadata profilers run first, the page contains surviving vector features, and consent allows learning. Inspect `snapshot().page`, `storage.data.temp` and `snapshot().profiles`.
 
-Immediately after collection, learning may still be queued. Wait for the normal fold, or call `fold()` in an isolated diagnostic example. A configuration-hash mismatch makes old vectors unusable until new learning occurs.
+Immediately after collection, learning may still be queued. Wait for the normal fold, or call `fold()` in an isolated diagnostic example. Changes to matching settings can require fresh learning before stored profiles are usable again.
 
 ## Every result is fallback
 
@@ -23,13 +23,13 @@ Fallback is expected for a new visitor or denied consent. Otherwise inspect prof
 
 Set `fallback: 'none'` temporarily to see only profile matches. Restore fallback after testing if the component should also show content to visitors without a usable profile.
 
-## Fast and slow return the same results
+## Different profiles return the same results
 
-After a single page their vector directions agree. Similar directions merge at the default threshold `0.9`. Differences emerge from additional browsing with elapsed time and different half-lives. Check the configured `decay` values; the names `fast` and `slow` have no built-in half-lives.
+Profiles can return the same content when they have learned similar interests. Check their configured `decay` values and test with different browsing histories over time. Names such as `fast` and `slow` have no built-in learning behaviour.
 
 ## Relevant rows disappear
 
-Check current-page ID, seen history and `seenWindow`, live suppressions, similarity and the number of requested slots. Profile selection can use a candidate only once by object identity. A page-learning exclusion does not itself remove a candidate from a feed.
+Check current-page ID, seen history and `seenWindow`, live suppressions, similarity and the number of requested slots. Supply unique candidate IDs. A page-learning exclusion does not itself remove a candidate from a feed.
 
 Temporarily set `removeSeenItems: false` and `excludeCurrent: false` to check whether those filters explain a missing row. Restore the site's settings after the comparison.
 
@@ -49,9 +49,9 @@ Check the internal storage path, destination target settings, consent, persisten
 
 The `get` source returns a promise and collection awaits it before processing that pipeline. Ensure custom asynchronous sources also return their promises. Call `collect()` before components await `ready`. Look for source errors, a deferred pipeline with a fresh cache, or a newer collection cancelling stale work.
 
-## Unexpected token features
+## Matching ignores an expected field
 
-Read the text-tokenisation traces. Stopwords are removed even from synonym replacements; short words need the appropriate rules; stemming produces internal forms such as `hous`. Key fields use comma-separated IDs, not prose tokenisation. The same configuration must build page and candidate vectors.
+Check that the field has a positive weight in `profile.fields`. Text fields must also appear in `text_fields`; category IDs must match the collected values. Review `stopwords`, `synonyms` and `keep_short` when useful text is missing from matches.
 
 ## Preview or checks use another checkout
 

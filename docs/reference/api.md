@@ -92,4 +92,4 @@ Set `engine.debug = true` for local traces. Browser consoles may require the Ver
 | `suppressions()` | Current live rules, removing expired entries |
 | `clearSuppression(scope, key)` | Remove matching rules; omit key for all in that scope |
 
-Use profile processors for normal learning and `snapshot()` for inspection. Low-level static vector and rank functions exported on the constructor are implementation helpers; component code should use the instance's `rank()` method.
+Use profile processors for normal learning and `snapshot()` for inspection. Component code should use the instance's `rank()` method.

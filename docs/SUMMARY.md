@@ -9,7 +9,7 @@
 * [Concepts and tools](concepts-and-tools/README.md)
   * [Profilers, profiles and dimensions](concepts-and-tools/profilers-and-profiles.md)
   * [Profile decay and confidence](concepts-and-tools/fast-and-slow-profiles.md)
-  * [Content vectors and matching](concepts-and-tools/content-vectors.md)
+  * [Content matching](concepts-and-tools/content-vectors.md)
   * [Ranking and recommendations](concepts-and-tools/ranking.md)
   * [Collection and learning lifecycle](concepts-and-tools/data-pipelines.md)
   * [Storage and expiry](concepts-and-tools/storage-and-expiry.md)
@@ -19,7 +19,7 @@
   * [Profiler configuration](configuration/profilers.md)
   * [Fields and profile configuration](configuration/profile.md)
   * [List processors: temp_list and store_list](configuration/lists.md)
-  * [Real site configuration](configuration/site-example.md)
+  * [Configuration example](configuration/site-example.md)
 
 * [Usage](usage/README.md)
   * [Rank content](ranking/README.md)

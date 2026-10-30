@@ -1,11 +1,11 @@
 # Configuration
 
-Configuration defines which data to collect, how to process it and where to publish the results. Choose sources, processors and destinations for each pipeline. Add vector fields and named profile processors only when the site needs learned matching.
+Configuration defines which data to collect, how to process it and where to publish the results. Choose sources, processors and destinations for each pipeline. Add matching fields and named profile processors only when the site needs learned matching.
 
 - [Profiler configuration](profilers.md): order sources, processors and destinations.
 - [Fields and profile configuration](profile.md): use matching fields for page metadata and candidate rows.
 - [List processors: temp_list and store_list](lists.md): collect comma-separated values for page learning or storage.
-- [Real site configuration](site-example.md): follow all 44 pipelines, their field mapping and the fast/slow settings.
+- [Configuration example](site-example.md): collect page fields, publish a topic and optionally learn one profile.
 
 ## Engine settings
 
@@ -14,7 +14,7 @@ The first constructor argument supports these top-level settings:
 | Setting | Purpose |
 | --- | --- |
 | `profilers` | Collection pipelines; see [profiler configuration](profilers.md) |
-| `profile` | Vector fields, weights and tokenisation; see [profile configuration](profile.md) |
+| `profile` | Matching fields, weights and text settings; see [profile configuration](profile.md) |
 | `privacy` | `consent_default`, `respect_gpc`, `cookies` and `cookie_days` |
 | `analytics` | `events` and `datalayer` |
 | `order` | Set to `'weight'` to sort pipelines by weight; omitted uses authored order |

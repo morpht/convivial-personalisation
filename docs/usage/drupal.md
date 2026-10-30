@@ -1,6 +1,6 @@
 # Integrate with Drupal
 
-Drupal can supply configuration and inputs for collection, processing and publishing. For recommendation components, it can also supply candidate JSON for the browser library to rank. The example below assumes the initializer configures profiles named `fast` and `slow`; use your own configured names.
+Drupal can supply configuration and inputs for collection, processing and publishing. For recommendation components, it can also supply candidate JSON for the browser library to rank. The example below assumes the initializer configures a profile named `interests`; use your own configured names.
 
 This guide assumes access to the site's library attachment, initializer and candidate feed. Build the browser bundle in this repository, then attach it before the initializer using your site's normal asset workflow.
 
@@ -9,7 +9,7 @@ This guide assumes access to the site's library attachment, initializer and cand
 ```javascript
 const engine = window.convivialPersonalisation;
 await engine.ready;
-const ranked = engine.rank(structuredClone(items), ['fast', 'slow'], 3, {
+const ranked = engine.rank(structuredClone(items), ['interests'], 3, {
   block: 'related-content'
 });
 ```
@@ -20,7 +20,7 @@ The browser bundle exposes `window.ConvivialPersonalisation.default`. The constr
 
 ## Use the site configuration
 
-The [real site configuration](../configuration/site-example.md) includes the complete JSON and field mapping. It collects `topic` and `audience` metadata into `topics` and `audiences` fields, weights `intent` at 10 and `campaign` at 8, and learns profiles with 60-second and 3,600-second half-lives.
+The [configuration example](../configuration/site-example.md) collects page fields, publishes a topic and optionally learns one profile. Use it as a starting point and choose the inputs and outputs your Drupal components need.
 
 Use `settings.config` and `settings.site` when constructing an engine. Configure consent and cookie publication through `config.privacy`, analytics through `config.analytics`, and connect consent UI changes to `engine.consent()`.
 

@@ -30,24 +30,4 @@ The `query` source supplies `gardening`, the `dimension` processor increments it
 
 This example keeps state and published output in memory with `persist: false`. A production initializer can enable persistence and connect the site's [consent controls](../concepts-and-tools/consent-and-data.md). The same pipeline structure supports [other sources](../reference/sources.md), including metatags, cookies and HTTP resources.
 
-## Optional content ranking
-
-`rank()` selects from a candidate array. Passing an empty profile list requests fallback results without learned-profile matching:
-
-```javascript
-const items = [
-  { nid: 'garden-tools', title: 'Choosing garden tools', topics: 'gardening', url: '/garden-tools' },
-  { nid: 'bus-routes', title: 'Finding a bus route', topics: 'transport', url: '/bus-routes' },
-  { nid: 'garden-seeds', title: 'Growing plants from seed', topics: 'gardening', url: '/garden-seeds' }
-];
-const results = engine.rank(structuredClone(items), [], 3, {
-  block: 'related-content'
-});
-console.table(results.map(({ id, profile, sim, pos }) => ({ id, profile, sim, pos })));
-```
-
-With this configuration, all three rows are returned in input order with `profile: 'fallback'`, `sim: null` and positions 1 to 3. Publishing `preferred_topic` does not automatically filter or score these candidates. `structuredClone()` preserves the original rows because ranking adds result fields.
-
-`block` is an optional name for the recommendation component. It labels the latest results and diagnostic traces, and identifies the component when you call `impression()` or `click()`. It defaults to `'default'` and does not change scores or ordering. Use a distinct name for each component; `rank()` itself emits no impression or click event.
-
-For learned matching, configure one or more [`profile` processors](../reference/processors.md#profile), align the [page and candidate fields](../configuration/profile.md), and pass those profile names to `rank()`. The builder chooses the names and settings. See [recommendation blocks](../usage/recommendations.md) for rendering and event handling.
+For content selection, see the separate [ranking example](../ranking/README.md). Publishing a dimension value does not automatically rank or filter content.

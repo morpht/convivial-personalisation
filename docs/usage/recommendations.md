@@ -2,11 +2,11 @@
 
 A component supplies candidates, waits for the engine, ranks the rows and renders them in returned order. Keep profile learning in the site's initializer so every component shares one collected page state.
 
-This example assumes the initializer configures profiles named `fast` and `slow`. Substitute your own configured names, or pass `[]` for fallback only. See [profiles with different half-lives](fast-and-slow.md) for one configuration pattern.
+This example uses the `interests` profile from the [configuration example](../configuration/site-example.md). Substitute your own configured names, or pass `[]` for fallback only.
 
 ## Before you start
 
-Have an initialized `window.convivialPersonalisation` whose collection has started, a JSON feed containing flat candidate rows, and a container element to render into. Each row needs a stable unique ID, a `title`, a `url` and the [configured vector fields](../configuration/profile.md). The function below takes the feed URL and container as arguments.
+Have an initialized `window.convivialPersonalisation` whose collection has started, a JSON feed containing flat candidate rows, and a container element to render into. Each row needs a stable unique ID, a `title`, a `url` and the [configured matching fields](../configuration/profile.md). The function below takes the feed URL and container as arguments.
 
 ## Fetch, rank and render
 
@@ -18,7 +18,7 @@ async function recommendations(feedUrl, container) {
   const items = await response.json();
   await engine.ready;
   const block = 'related-content';
-  const ranked = engine.rank(structuredClone(items), ['fast', 'slow'], 3, { block });
+  const ranked = engine.rank(structuredClone(items), ['interests'], 3, { block });
   container.replaceChildren();
   for (const item of ranked) {
     const url = new URL(item.url, location.origin);
@@ -40,7 +40,7 @@ Because fetching is asynchronous, current-page learning may already have folded 
 
 ## Choose an allocation
 
-When those profiles have been configured with different half-lives, request `['fast', 'slow']` for a mix of recent and established interests. To request two results from fast and one from slow, use `{ fast: 2, slow: 1 }` with count `3`. Similar profile directions may merge; a missing profile cannot fill its requested slots.
+For multiple configured profiles, pass their names as an array or request a count for each name. See [profiles with different half-lives](fast-and-slow.md) for an optional example. Similar profiles can share a selection; a missing profile cannot fill its requested slots.
 
 Use `fallback: 'none'` only when the component can handle fewer results. The default fallback helps new visitors receive content before useful profiles exist.
 
@@ -52,4 +52,4 @@ Give each block a distinct name so diagnostics and event records identify the in
 
 ## Verify the block
 
-Confirm that the displayed order matches the returned array, a first visit can show fallback content, and a learned visit can return rows selected by `fast` or `slow`. Check that each rendered link has the expected title and destination. With analytics enabled and consent granted, rendering and clicking should add the corresponding block events to the configured data layer. For unexpected results, use [the troubleshooting checks](../support/troubleshooting.md).
+Confirm that the displayed order matches the returned array, a first visit can show fallback content, and a learned visit can return rows selected by `interests`. Check that each rendered link has the expected title and destination. With analytics enabled and consent granted, rendering and clicking should add the corresponding block events to the configured data layer. For unexpected results, use [the troubleshooting checks](../support/troubleshooting.md).

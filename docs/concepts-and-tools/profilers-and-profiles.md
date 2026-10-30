@@ -1,32 +1,20 @@
 # Profilers, profiles and dimensions
 
-A **profiler** is a configured pipeline of sources, processors and destinations. A **dimension** counts named categories, such as topics or audiences. A learned **profile** represents interests for content matching and is optional.
+A **profiler** is a configured pipeline of sources, processors and destinations. A **dimension** counts named categories, such as topics or audiences. An optional learned **profile** represents visitor interests for content matching.
 
-For example, a profiler can read a topic from a URL parameter, add to the topics dimension and publish its leading value. A site can use that value without creating a learned profile. Adding a `profile` processor enables learning for ranking.
-
-A learned profile is stored as a vector: a numeric representation used to compare interests with content.
-
-| Concept | Stored or configured as | Example |
+| Configuration element | Purpose | Example |
 | --- | --- | --- |
-| Profiler | Entry in `config.profilers` | `page_topics` reads metadata |
-| Source | Profiler's `sources` | `meta` reads `topics` |
-| Processor | Profiler's `processors` | `temp_list` writes page topics; `profile` learns a vector |
-| Destination | Profiler's `destinations` | `top` publishes the strongest audience |
-| Page metadata | `storage.data.temp` | `topics: 'gardening,transport'` |
-| Profile | `storage.data.profiles.<name>` | `interests`, with vector and half-life |
-| Dimension | `storage.data.dimensions.<name>` | `topics: { gardening: 3, transport: 1 }` |
-| Published value | Flat key read by `engine.published()` | `selected_audience: 'students'` |
+| Source | Read an input | `query` reads a topic parameter |
+| Processor | Transform or retain values | `dimension` counts topics; `store` saves a value |
+| Destination | Make results available to components | `top` publishes the leading topic |
+| Profile processor | Learn interests for content ranking | `profile` updates a profile named `interests` |
 
-## How they work together
+A pipeline can read a topic, add it to a dimension and publish the leading topic without creating a learned profile. See [collect and publish a value](../getting-started/installation.md).
 
-A metadata profiler can use both `temp_list` and `dimension` processors. The temporary values supply fields to the vector builder. The counters supply category leaders for `top` and `tops` destinations and matching labels in ranked items' `why` arrays.
+## Add optional learning
 
-When learning is configured, place its `profile` processors after the pipelines that collect the page fields. Each processor queues the page vector for the name in its `storage_key`, with its own half-life and accumulation. The builder chooses the profile names and number of profiles; a ranking call does not create them.
+When ranking needs learned interests, collect the page fields first and place `profile` processors afterwards. Each processor's `storage_key` names the profile it updates. The builder chooses the number of profiles and their settings; requesting a name in `rank()` does not create it.
 
-## Profile vectors and dimension counters
+Dimensions and profiles serve different purposes. Dimensions provide category counts and values for destinations. Profiles provide learned interests for content matching. A pipeline can update both when the site needs both outputs.
 
-Named profiles decay over time and compare their vectors with candidate vectors. Dimension counters remain ordinary numeric totals until changed or erased; the `dimension` processor does not apply a fast or slow decay window.
-
-Profile confidence is the remaining vector magnitude, capped at one. Dimension confidence is the leading counter's margin over the second counter, divided by the leading counter. They answer different questions and are not probabilities.
-
-Use [profile decay and confidence](fast-and-slow-profiles.md) for ranking behaviour and [audience choices](../usage/audience.md) for publishing a category value.
+Profile learning can use a configured half-life. Dimension counters remain totals until changed or erased. See [profile decay and confidence](fast-and-slow-profiles.md) and [audience choices](../usage/audience.md).

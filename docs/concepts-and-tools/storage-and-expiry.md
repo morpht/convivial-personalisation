@@ -1,23 +1,10 @@
 # Storage and expiry
 
-The engine stores site data under the browser local-storage key `convivial_personalisation`. The root contains `_version: 3` and a record for each site ID. Each record has `_schema: 3` and separate namespaces. These numbers identify the storage format, separately from the library release version.
+With persistence and consent enabled, the library keeps site state in browser local storage under `convivial_personalisation`, separated by site ID. State includes stored values, dimensions, optional profiles and seen history.
 
-| Namespace | Meaning |
-| --- | --- |
-| `temp` | Flat metadata from the latest collection; cleared on construction and collection |
-| `profiles` | Named accumulators with `v`, `t`, `n`, `decay` and configuration hash `cfg` |
-| `dimensions` | Named category counters |
-| `store` | Values generally stored as `{ value, expire }` |
-| `fetchers` | Cached HTTP results and expiry |
-| `counters`, `accumulators` | Numeric counters and totals |
-| `log` | Capped value/timestamp maps |
-| `seen` | Viewed ID/timestamp entries; capped at 200 by the normal fold path |
-| `suppress` | Exclusion and demotion rules |
-| `meta` | Internal metadata, including published-key tracking |
+Use the API to read values and inspect state. The stored JSON format is managed by the library.
 
-## Read the right path
-
-Temporary values are flat: use `temp.topics`, not an object wrapper. Lists are serialised as comma-separated strings at the storage boundary. Stored values use paths such as `store.selected_audience.value`; dimensions use paths such as `dimensions.topics.gardening`.
+## Read values
 
 ```javascript
 const topics = engine.storage.get('temp.topics');
@@ -25,32 +12,22 @@ const selected = engine.storage.get('store.selected_audience.value');
 const published = engine.published('selected_audience');
 ```
 
-A published key is a separate flat output. `engine.published()` checks in-memory outputs first, then permitted local storage. Use it instead of reading local storage directly when memory-only operation or denied consent is possible.
+`temp` holds page fields for the current collection. `store` retains processor values, which can have an expiry. `published()` reads a component's output from memory or permitted local storage and also works when persistence is disabled.
 
-## Persistence
+## Persistence and seen history
 
-State changes are batched for persistence through an idle callback or timer and page lifecycle events. Folding flushes changed state. `engine.storage.flush()` returns whether a write succeeded. A processor can update memory before that change reaches local storage.
+`persist: false` keeps new state and ordinary published outputs in memory. They are lost on reload. The engine also supports in-memory operation when browser storage is unavailable. Consent controls still apply; see [consent and data handling](consent-and-data.md).
 
-`persist: false` keeps new state and ordinary published outputs in memory. Unavailable local storage also allows in-memory operation. A future storage schema is not overwritten by an older engine. The snapshot is usually a better diagnostic entry point than editing the stored JSON.
+Seen history records item IDs and view times. Normal page learning records the eligible current page; `engine.profile.markSeen(id)` can record an explicit visit. Ranking alone does not record a view. Use stable IDs across pages and candidate rows so `removeSeenItems` can match them.
 
-Page-scoped `temp` may be included in the serialised record, but it is cleared on the next construction or collection; it is not durable profile history.
+## Expiry
 
-## Expiry is separate from decay
+`ttl` sets how long a stored value remains valid, in seconds. The `store`, language and `extreme_geoip` processors accept positive durations; omitted or non-positive numeric values mean no expiry. They also accept `'page'` for page-scoped values.
 
-A time to live (TTL) controls how long a stored value remains valid. Profile decay gradually reduces the strength of learned interests instead.
+Expired stored values are removed during collection. Reading a raw storage path does not trigger expiry. `store_list` has different TTL rules; use its [reference](../reference/processors.md#store_list). Suppression durations are documented in the [suppression guide](../usage/suppression.md).
 
-The shared expiry helper used by `store`, language processors and `extreme_geoip` follows these rules:
-
-| TTL | Result |
-| --- | --- |
-| Positive number | Expire that many seconds from now, rounded |
-| `0`, negative number, empty, null or omitted | No expiry (`expire: null`) |
-| `'page'` | Expiry timestamp equal to the current second |
-
-The collection sweep removes `store` and `fetchers` entries when `expire < now`. Raw reads do not enforce expiry, and the page value is swept only on a later collection whose time has advanced. Profile `decay` is a half-life, not this expiry mechanism.
-
-`store_list` has distinct behaviour: use a numeric TTL; `-1` means 365 days and other values are added directly to the current timestamp. It does not use the shared permanent/page rules. Suppression TTL also has its own calculation: use positive seconds for a duration or omit it for a persistent rule.
+Profile `decay` controls how interests change over time; it does not use stored-value expiry.
 
 ## Clear state
 
-`engine.erase()` clears this site's profile, outputs recorded in its published-key index, queued work and block records. It does not change the consent choice. `engine.consent('denied')` both records denied consent and erases the site's state. See [consent and data handling](consent-and-data.md).
+`engine.erase()` clears this site's state and tracked published outputs while keeping the consent choice. `engine.consent('denied')` records denied consent and erases the site's state. Use `engine.snapshot()` for diagnostics.

@@ -1,6 +1,6 @@
 # Profiler configuration
 
-The engine accepts one configuration object with `profilers`, `profile`, `privacy`, `analytics`, optional `order` and optional `debug`. Each entry in `profilers` defines a collection pipeline.
+The engine accepts one configuration object with `profilers`, `profile`, `privacy`, `analytics`, optional `order` and optional `debug`. Each entry in `profilers` defines a [profiler](../concepts-and-tools/profilers.md) with sources, processors and destinations. These operations can read or update shared [engine state](../concepts-and-tools/engine-state.md).
 
 ## Pipeline properties
 

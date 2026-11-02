@@ -7,7 +7,8 @@
   * [Collect and publish a value](getting-started/installation.md)
 
 * [Concepts and tools](concepts-and-tools/README.md)
-  * [Profilers, profiles and dimensions](concepts-and-tools/profilers-and-profiles.md)
+  * [Profilers](concepts-and-tools/profilers.md)
+  * [Engine state](concepts-and-tools/engine-state.md)
   * [Profile decay and confidence](concepts-and-tools/fast-and-slow-profiles.md)
   * [Content matching](concepts-and-tools/content-vectors.md)
   * [Ranking and recommendations](concepts-and-tools/ranking.md)

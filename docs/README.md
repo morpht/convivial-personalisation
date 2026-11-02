@@ -6,6 +6,8 @@ Clientside personalisation engine for building profiles and ranking content.
 
 Convivial Personalisation uses data from many sources, including metatags, URL parameters, cookies, saved values in local storage, page content and HTTP resources. Builders choose which inputs to collect, how to process them and where to publish the results through JSON configuration.
 
+The library and this guide are maintained in the `convivial-personalisation` repository. The examples use its browser bundle and the `ConvivialPersonalisation` API.
+
 ## What it does
 
 - Collect and transform values through configurable sources and processors.
@@ -18,7 +20,7 @@ Profiles are optional. The builder chooses their names, number and settings when
 ## Use the guide
 
 - [Getting started](getting-started/README.md): load the library, configure a pipeline and use its output.
-- [Concepts and tools](concepts-and-tools/README.md): collection, dimensions, optional profiles, storage and consent.
+- [Concepts and tools](concepts-and-tools/README.md): profiler operations, engine state, ranking and consent.
 - [Configuration](configuration/README.md): define sources, processors, destinations and optional learning settings.
 - [Usage](usage/README.md): publish audience choices, rank content and integrate with Drupal.
 - [Reference](reference/README.md): JavaScript methods, options and built-in plugins.

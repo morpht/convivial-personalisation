@@ -1,8 +1,8 @@
 # Integrate with Drupal
 
-Drupal can supply configuration and inputs for collection, processing and publishing. For recommendation components, it can also supply candidate JSON for the browser library to rank. The example below assumes the initializer configures a profile named `interests`; use your own configured names.
+Drupal can supply Convivial Personalisation with configuration and inputs for collection, processing and publishing. For recommendation components, it can also supply candidate JSON for the browser library to rank. The example below assumes the initializer configures a profile named `interests`; use your own configured names.
 
-This guide assumes access to the site's library attachment, initializer and candidate feed. Build the browser bundle in this repository, then attach it before the initializer using your site's normal asset workflow.
+This guide assumes access to the site's library attachment, initializer and candidate feed. Build the browser bundle in the `convivial-personalisation` repository, then attach it before the initializer using your site's normal asset workflow.
 
 ## Reuse the initialized engine
 
@@ -41,7 +41,7 @@ Keep all metadata profilers before profile learning. If the initializer uses `or
 
 ## Build and deploy the library
 
-Build `dist/bundle.js` in this repository with `npm run build`, run the checks and tests, and use the site's normal dependency or asset deployment process to update the served library.
+Build `dist/bundle.js` in `convivial-personalisation` with `npm run build`, run the checks and tests, and use the site's normal dependency or asset deployment process to update the served library. See [get the browser bundle](browser.md#1-get-the-browser-bundle) for the repository URL and build commands.
 
 After deployment, inspect `window.convivialPersonalisation.version` to confirm the browser has the intended version and clear the relevant asset caches through the site's usual tooling.
 

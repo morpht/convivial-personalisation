@@ -1,6 +1,6 @@
 # Storage and expiry
 
-With persistence and consent enabled, the library keeps site state in browser local storage under `convivial_personalisation`, separated by site ID. State includes stored values, dimensions, optional profiles and seen history.
+With persistence and consent enabled, the library keeps site state in browser local storage under `convivial_personalisation`, separated by site ID. See [engine state](engine-state.md) for the stored values, dimensions, optional profiles and other state managed by the engine.
 
 Use the API to read values and inspect state. The stored JSON format is managed by the library.
 

@@ -1,2 +1,4 @@
 # GitBook imports the current library guide from this repository.
 root: ./docs/
+redirects:
+  concepts-and-tools/profilers-and-profiles: concepts-and-tools/profilers.md

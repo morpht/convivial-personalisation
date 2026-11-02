@@ -52,7 +52,3 @@ The `get` source returns a promise and collection awaits it before processing th
 ## Matching ignores an expected field
 
 Check that the field has a positive weight in `profile.fields`. Text fields must also appear in `text_fields`; category IDs must match the collected values. Review `stopwords`, `synonyms` and `keep_short` when useful text is missing from matches.
-
-## Preview or checks use another checkout
-
-Run `npm start`, `npm run check` and `npm test` in this repository. The tools resolve this repository relative to themselves. Remove an unintended `CONVIVIAL_DOCS_ROOT` environment override. Restart the preview after editing; it loads documentation at startup.

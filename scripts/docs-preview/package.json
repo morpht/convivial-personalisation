@@ -1,0 +1,16 @@
+{
+  "name": "convivial-personalisation-docs",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node ../preview-docs.mjs",
+    "test": "node --test preview.test.mjs",
+    "export": "node export.mjs"
+  },
+  "engines": { "node": ">=22.12.0" },
+  "dependencies": {
+    "jsdom": "^26.1.0",
+    "marked": "^17.0.6",
+    "prismjs": "^1.30.0"
+  }
+}

@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="nid" content="page-gardening">
+  <meta name="title" content="Growing a garden">
+  <meta name="topics" content="gardening|Gardening">
+  <title>Your first recommendation | Convivial Personalisation</title>
+  <style>
+    body { max-width: 65rem; margin: 3rem auto; padding: 0 1.5rem; color: #172b40; font: 1rem/1.6 system-ui, sans-serif; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { padding: .65rem; border: 1px solid #b5c2cc; text-align: left; }
+    button { padding: .7rem 1rem; font: inherit; cursor: pointer; }
+    pre { overflow: auto; padding: 1rem; background: #edf3f6; }
+    .table-wrap { overflow-x: auto; }
+  </style>
+  <script src="../dist/bundle.js"></script>
+  <script type="module" src="./page.js"></script>
+</head>
+<body>
+  <main>
+    <h1>Your first recommendation</h1>
+    <p><a href="./site.html">Try the full site configuration with fast and slow recommendations</a>.</p>
+    <p>This example learns a gardening page into fast and slow profiles, then ranks three synthetic candidates. Data stays in memory and analytics are disabled.</p>
+    <button id="run" type="button">Run the example again</button>
+    <p id="status" role="status"></p>
+    <div class="table-wrap"><table>
+      <caption>Ranked content, in display order</caption>
+      <thead><tr><th scope="col">Title</th><th scope="col">Profile</th><th scope="col">Similarity</th><th scope="col">Score</th><th scope="col">Why</th></tr></thead>
+      <tbody id="results"></tbody>
+    </table></div>
+    <h2>Profile snapshot</h2>
+    <pre id="snapshot" tabindex="0"></pre>
+  </main>
+</body>
+</html>

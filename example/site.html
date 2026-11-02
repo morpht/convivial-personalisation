@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Fast and slow recommendations | Convivial Personalisation</title>
+  <style>
+    body { max-width: 70rem; margin: 3rem auto; padding: 0 1.5rem; color: #172b40; font: 1rem/1.6 system-ui, sans-serif; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { padding: .65rem; border: 1px solid #b5c2cc; text-align: left; }
+    button { padding: .7rem 1rem; font: inherit; cursor: pointer; }
+    pre { overflow: auto; padding: 1rem; background: #edf3f6; }
+    .table-wrap { overflow-x: auto; }
+  </style>
+  <script src="../dist/bundle.js"></script>
+  <script type="module" src="./site-page.js"></script>
+</head>
+<body>
+  <main>
+    <h1>Fast and slow recommendations</h1>
+    <p>This example uses the complete site configuration. It learns a cat page, simulates five minutes passing, then learns a dog page. Fast has a one-minute half-life; slow has a one-hour half-life.</p>
+    <p>The comparison isolates similarity. The slow profile should retain more cat interest, while the fast profile responds more strongly to the recent dog page. Shared intent and other fields can also contribute to each score.</p>
+    <p>Data stays in memory. The example uses a separate site ID and disables diagnostic logging; analytics remain off.</p>
+    <button id="run" type="button">Run the example again</button>
+    <p id="status" role="status"></p>
+    <div id="results"></div>
+    <h2>Current profile snapshot</h2>
+    <pre id="snapshot" tabindex="0"></pre>
+    <p><a href="./">Minimal example</a> · <a href="../test/fixtures/site-config.json">Complete site configuration</a></p>
+  </main>
+</body>
+</html>

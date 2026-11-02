@@ -13,13 +13,13 @@ The initializer must already have constructed the engine and started collection.
 ## Arguments
 
 ```text
-engine.rank(items, profiles = ['fast', 'slow'], count = 5, options = {})
+engine.rank(items, profiles = null, count = 5, options = {})
 ```
 
 | Argument | Meaning |
 | --- | --- |
 | `items` | Array of flat row objects with configured fields and stable unique IDs |
-| `profiles` | Array of profile names, or object mapping names to requested slot counts |
+| `profiles` | Array of configured profile names, object mapping names to requested slot counts, or `null`; defaults to `null` |
 | `count` | Maximum number of results; use a non-negative integer |
 | `options` | Controls below; omitted options use their defaults |
 
@@ -28,12 +28,13 @@ Pass the names of profiles configured by the site. The call above uses `interest
 ```javascript
 engine.rank(structuredClone(items), ['interests'], 5);
 engine.rank(structuredClone(items), { interests: 5 }, 5);
-engine.rank(structuredClone(items), [], 5);
+engine.rank(structuredClone(items), null, 5);
+engine.rank(structuredClone(items));
 ```
 
-The first call allocates slots by confidence. The second requests fixed slots. The third requests fallback only. `fast` and `slow` are the method's default requested names, but the engine does not configure or create profiles with those names automatically. Pass the names learned by your configured `profile` processors. Unavailable profiles relinquish their selection; unused capacity can be filled by fallback.
+The first call allocates slots by confidence. The second requests fixed slots. The third and fourth request fallback only. Omitting `profiles` or passing `undefined` uses `null`; no profiles are selected automatically, even when the engine has learned profiles. An empty array also requests fallback only. Pass the names learned by your configured `profile` processors to use them for ranking. Unavailable profiles relinquish their selection; unused capacity can be filled by fallback.
 
-An empty candidate array or zero count returns `[]`. An empty profile array still allows fallback. Distinct row objects with the same ID are not generally deduplicated. Deduplicate your feed first.
+An empty candidate array or zero count returns `[]`. A null or empty profile selection still allows fallback; with `fallback: 'none'`, it returns `[]`. Fallback honours the current-page, seen-item and suppression filters. Distinct row objects with the same ID are not generally deduplicated. Deduplicate your feed first.
 
 ## Options
 

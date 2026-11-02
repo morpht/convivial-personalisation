@@ -26,7 +26,7 @@ Construction loads permitted storage and registers built-in plugins. It does not
 
 ## `rank(items, profiles, count, options)`
 
-Returns an array synchronously. It uses this engine's profiles and history and mutates the candidate objects. See [the complete rank reference](rank.md).
+Returns an array synchronously. It uses the explicitly requested profiles and this engine's history, and mutates the candidate objects. `profiles` defaults to `null`, which requests fallback only. Pass configured profile names to select with those profiles. See [the complete rank reference](rank.md).
 
 ## `use(plugin)`
 

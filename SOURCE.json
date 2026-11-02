@@ -1,0 +1,8 @@
+{
+  "repository": "https://github.com/morpht/convivial-govcms",
+  "revision": "d18146caa41e760d3a8bea7e441e21aa4940d2bc",
+  "libraryRevision": "878b0e5ae5b53f947e84e11be8dadac45a413d0b",
+  "path": "web/themes/custom/convivial_govcms_morphos/libraries/convivial-personalisation",
+  "sourceVersion": "3.0.0-p13n.13",
+  "notes": "Extracted from the latest local p13n library. Upstream p13n was verified at 8c0d122d17cfeba20798388fe05a05ef11aea203 and contained the older p13n.12 library. Runtime source files were copied unchanged. The Drupal initializer fixture comes from the same local revision. sourceVersion records that historical snapshot; the standalone library release version is defined in package.json and src/index.js."
+}

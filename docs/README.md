@@ -1,6 +1,6 @@
 # Introduction
 
-*Library version 1.0.0*
+*Library version 0.0.1*
 
 Clientside personalisation engine for building profiles and ranking content.
 

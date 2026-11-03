@@ -63,6 +63,8 @@ Published values are strings. `publish(key, value, where)` defaults to a local-s
 
 After a block is rendered, call `impression(block, items)`. It emits `cp.block_impression` with block, variant, profile names, IDs and count. If items are omitted it uses the last result recorded for that block.
 
+The method records the items supplied by the caller. It does not observe the viewport or discover rendered elements. Pass only items actually rendered, using their normalized `id`, `profile` and `pos` values from `rank()`.
+
 On interaction, call `click(block, item, position)`. It emits `cp.block_click` with the item ID, profile, one-based position and formatted similarity. Omitting position uses `item.pos`. `rank()` does not call these methods automatically.
 
 `pushEvent(payload)` appends to the configured data-layer array only when analytics events are enabled and personalisation is allowed. These methods do not send HTTP requests themselves. `variant()` always returns `'personalised'`; the library does not assign experimental cohorts.
@@ -71,7 +73,7 @@ On interaction, call `click(block, item, position)`. It emits `cp.block_click` w
 
 `snapshot()` returns a diagnostic object with version, schema, site, consent, profile confidence, decayed observation counts, half-lives, page metadata, dimension rankings, seen count, suppressions, stored values, counters, published-key names and block summaries. Treat it as read-only diagnostic data; some nested data is shallow-copied.
 
-Set `engine.debug = true` for local traces. Browser consoles may require the Verbose level. Filter on the diagnostic prefix `[convivial-profiler]`. Each trace carries an event name, sequence, collection generation and relevant block or ranking identifiers.
+Set `engine.debug = true` for local traces. Browser consoles may require the Verbose level. Filter on the diagnostic prefix `[convivial-personalisation]`. Each trace carries an event name, sequence, collection generation and relevant block or ranking identifiers.
 
 ## Profile operations
 

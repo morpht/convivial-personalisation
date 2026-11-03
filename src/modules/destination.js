@@ -113,7 +113,7 @@ export function copy(engine, profiler, destination, values) {
 export function datalayer_event(engine, profiler, destination, values) {
   values.forEach((value) => {
     engine.pushEvent({
-      event: 'convivialProfiler.event',
+      event: 'convivialPersonalisation.event',
       category: destination.category,
       action: destination.action,
       label: typeof value === 'object' ? JSON.stringify(value) : value,
@@ -177,7 +177,7 @@ export function formtracker(engine, profiler, destination, values) {
         if (checked) label = checked.value;
       }
       engine.pushEvent({
-        event: 'convivialProfiler.event',
+        event: 'convivialPersonalisation.event',
         category: destination.event_category,
         action: destination.event_action,
         label,

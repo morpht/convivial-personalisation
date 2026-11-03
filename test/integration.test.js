@@ -13,7 +13,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-  window.convivialProfiler?.erase();
+  window.convivialPersonalisation?.erase();
 });
 
 it('cookie-only cleanup preserves an intent published in memory without consent', () => {

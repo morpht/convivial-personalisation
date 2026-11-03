@@ -5,7 +5,7 @@ import bundle from '../dist/bundle.js?raw';
 import initializer from './fixtures/drupal-initializer.js?raw';
 
 afterEach(() => {
-  window.convivialProfiler?.erase();
+  window.convivialPersonalisation?.erase();
   localStorage.clear();
   document.head.innerHTML = '';
   vi.restoreAllMocks();
@@ -19,6 +19,7 @@ it('uses the library list processors and diagnostics through the real Drupal ini
     site: 'bundle-test',
     config: {
       debug: true,
+      analytics: { events: true },
       profilers: {
         topics: {
           sources: [{ type: 'meta', attribute_name: 'topics' }],
@@ -43,19 +44,21 @@ it('uses the library list processors and diagnostics through the real Drupal ini
     console,
     setTimeout,
     Drupal: { behaviors: {} },
-    drupalSettings: { convivialProfiler: config },
+    drupalSettings: { convivialPersonalisation: config },
     once: (name) =>
-      name === 'convivial-profiler' ? [document.documentElement] : [],
+      name === 'convivial-personalisation' ? [document.documentElement] : [],
     jQuery: () => ({ on: () => {} }),
   };
   runInNewContext(bundle, context);
   window.ConvivialPersonalisation = context.ConvivialPersonalisation;
   runInNewContext(initializer, context);
-  context.Drupal.behaviors.convivialProfiler.attach(document, {});
-  const cp = window.convivialProfiler;
+  context.Drupal.behaviors.convivialPersonalisation.attach(document, {});
+  const cp = window.convivialPersonalisation;
   await cp.ready;
   cp.fold();
-  expect(Object.keys(cp.profilerProcessor)).toEqual([]);
+  expect(cp.analytics.events).toBe(false);
+  expect(config.config.analytics.events).toBe(true);
+  expect(typeof cp.processors.temp_list).toBe('function');
   expect(cp.storage.data.temp.profile_topic).toBe('housing, transport');
   expect(cp.storage.data.temp.profile_audience).toBe('residents, business');
   expect(
@@ -77,7 +80,7 @@ it('uses the library list processors and diagnostics through the real Drupal ini
   );
 });
 
-it('supports the old constructor and initializer overrides without restoring temp wrappers', async () => {
+it('supports registered processors without restoring temporary-value wrappers', async () => {
   document.head.innerHTML =
     '<meta name="topic" content="housing"><meta name="topic" content="transport">';
   const context = {
@@ -89,7 +92,7 @@ it('supports the old constructor and initializer overrides without restoring tem
     setTimeout,
   };
   runInNewContext(bundle, context);
-  const cp = new window.ConvivialProfiler.default(
+  const cp = new context.ConvivialPersonalisation.default(
     {
       profilers: {
         topics: {
@@ -109,12 +112,15 @@ it('supports the old constructor and initializer overrides without restoring tem
       },
     },
     'legacy-test',
-    'unused-legacy-license',
+    {},
   );
-  // Registration and argument order used by the previous Drupal initializer.
-  cp.profilerProcessor.temp_list = function (profiler, processor, values) {
-    this._setValue('temp', processor.storage_key, { value: values });
-  };
+  cp.use({
+    processors: {
+      temp_list(engine, profiler, processor, values) {
+        engine.storage.set('temp', processor.storage_key, { value: values });
+      },
+    },
+  });
   await cp.collect();
   cp.fold();
   expect(cp.version).toBe(ConvivialPersonalisation.VERSION);

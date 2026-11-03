@@ -1,107 +1,60 @@
 /**
  * @file
- * Convivial Profiler library init.
- *
- * Copyright Morpht Pty. Ltd. 2020.
- * This code must be licensed.
+ * Initializes Convivial Personalisation and connects the consent controls.
  */
-
-(function ($, window, once, Drupal, config, ConvivialProfiler) {
+(function (window, once, Drupal, settings, ConvivialPersonalisation) {
   'use strict';
 
-  Drupal.behaviors.convivialProfiler = {
-    attach: function (context, settings) {
-      if (!config || !config.config) {
+  Drupal.behaviors.convivialPersonalisation = {
+    attach: function (context) {
+      if (!settings || !settings.config) {
         return;
       }
-      once('convivial-profiler', 'html', context).forEach(function (element) {
-        // Retire v1 identifiers without copying them to the new profile.
-        try {
-          window.localStorage.removeItem('convivial_profiler');
-          window.localStorage.removeItem('ConvivialProfilerClientId');
-          window.localStorage.removeItem('RecombeeUserId');
-        } catch (error) {
-          // The engine supports browsers where storage is unavailable.
-        }
-        [
-          'ConvivialProfilerClientId',
-          'ConvivialProfilerCookieConsent',
-          'RecombeeUserId',
-          'RecombeeCookieConsent',
-        ].forEach(function (name) {
-          document.cookie = name + '=;path=/;Max-Age=0;SameSite=Lax';
-        });
-
-        // Keep cookies and analytics disabled for this integration.
-        config.event_tracking = false;
-        config.config.privacy = {
-          ...config.config.privacy,
-          cookies: false,
-          respect_gpc: true,
+      once('convivial-personalisation', 'html', context).forEach(function () {
+        const config = {
+          ...settings.config,
+          privacy: {
+            ...settings.config.privacy,
+            cookies: false,
+            respect_gpc: true,
+          },
+          // Analytics remain disabled for this integration.
+          analytics: {
+            ...settings.config.analytics,
+            events: false,
+          },
         };
-        config.config.analytics = { ...config.config.analytics, events: false };
-        window.convivialProfiler = new ConvivialProfiler(
-          config.config,
-          config.site,
-        );
+        const engine = new ConvivialPersonalisation(config, settings.site);
         function personalisationConsent(event) {
-          const profiler = window.convivialProfiler;
           const consent = window.CookieConsent;
           if (!consent || !consent.validConsent()) {
             return;
           }
-          const wasPersonalised = profiler.personalised;
-          profiler.consent(
+          const wasPersonalised = engine.personalised;
+          engine.consent(
             consent.acceptedCategory('convivial_personalisation')
               ? 'granted'
               : 'denied',
           );
-          if (event && (!wasPersonalised || !profiler.personalised)) {
-            // Recollect the current page once, keeping temp available on opt-out.
-            if (profiler.personalised) {
-              profiler.erase();
+          if (event && (!wasPersonalised || !engine.personalised)) {
+            // Recollect once, keeping temporary values available on opt-out.
+            if (engine.personalised) {
+              engine.erase();
             }
-            profiler.collect();
+            engine.collect();
           }
         }
         window.addEventListener('cc:onConsent', personalisationConsent);
         window.addEventListener('cc:onChange', personalisationConsent);
-        // The consent UI may have loaded before this behaviour attached.
         personalisationConsent();
-        window.convivialProfiler.collect();
-        $(once('cp-trackable', context)).on(
-          'click',
-          '.cp_trackable a.btn',
-          function (event) {
-            if (config.event_tracking) {
-              event.preventDefault();
-              window.dataLayer = window.dataLayer || [];
-              window.dataLayer.push({
-                event: 'convivialProfiler.event',
-                category: $(this)
-                  .parents('.cp_trackable')
-                  .first()
-                  .attr('data-cp-category'),
-                action: 'click',
-                label: $(this)
-                  .parents('.cp_trackable')
-                  .first()
-                  .attr('data-cp-label'),
-                eventCallback: function () {
-                  window.location = event.target.href;
-                },
-              });
-            }
-          },
-        );
+        engine.collect();
       });
     },
   };
 })(
-  jQuery,
   window,
   once,
   Drupal,
-  drupalSettings.convivialProfiler,
+  drupalSettings.convivialPersonalisation,
   window.ConvivialPersonalisation.default,
 );

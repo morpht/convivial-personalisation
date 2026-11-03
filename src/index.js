@@ -9,14 +9,14 @@
  *     const items = cp.rank(rows, ['interests'], 5, { removeSeenItems: true });
  *   });
  *
- * Nothing in this engine sends visitor data anywhere: the profile lives in
- * localStorage under `convivial_personalisation`; consumers read published
- * keys and call rank().
+ * Profiles live in localStorage under `convivial_personalisation`. Optional
+ * event methods add records to the local data layer; the site analytics
+ * integration controls their delivery.
  *
  * Set config.debug = true before construction to trace the initial collection.
  * options.debug overrides config.debug (including false). At runtime use
- * window.convivialProfiler.debug = true / false. Enable the browser console's
- * Verbose level and filter on [convivial-profiler]. Logs are local snapshots;
+ * window.convivialPersonalisation.debug = true / false. Enable the browser console's
+ * Verbose level and filter on [convivial-personalisation]. Logs are local snapshots;
  * logging is off by default and is never persisted or sent to analytics.
  * Each line explains its decision with run/step numbers and, for ranking,
  * block/call identifiers. Expand the attached snapshot for the stable event
@@ -65,7 +65,7 @@ import {
   warn,
 } from './lib/utility';
 
-export const VERSION = '1.0.0';
+export const VERSION = '0.0.1';
 const CONSENT_KEY = 'convivial_personalisation_consent';
 
 export const DEFAULT_PRIVACY = {
@@ -113,7 +113,7 @@ export class ConvivialPersonalisation {
 
     this.sources = Object.assign({}, sources);
     this.processors = Object.assign({}, processors);
-    // Existing integrations register processors with the v1 argument order.
+    // Compatibility registry for processor overrides in profiler pipelines.
     this.profilerProcessor = {};
     this.destinations = Object.assign({}, destinations);
 
@@ -141,7 +141,6 @@ export class ConvivialPersonalisation {
 
     if (typeof window !== 'undefined') {
       window.convivialPersonalisation = this;
-      window.convivialProfiler = this; // alias for scripts written against v1/v2
     }
     this.trace('engine.init', {
       version: this.version,
@@ -891,8 +890,3 @@ ConvivialPersonalisation.expiry = expiry;
 ConvivialPersonalisation.decayFactor = decayFactor;
 
 export default ConvivialPersonalisation;
-
-// Older Drupal initializers construct window.ConvivialProfiler.default.
-if (typeof window !== 'undefined') {
-  window.ConvivialProfiler = { default: ConvivialPersonalisation };
-}

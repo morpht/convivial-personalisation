@@ -16,7 +16,7 @@ Reads an internal path and publishes its value.
 
 ## `datalayer_event`
 
-Emits one `convivialProfiler.event` data-layer event per input.
+Emits one `convivialPersonalisation.event` data-layer event per input.
 
 `category`, `action` and optional `normalize` set the event fields. Labels use the input, JSON-encoding objects; value is `1` or `1 / input count`. Events honour analytics and consent controls.
 
@@ -36,7 +36,7 @@ Fills matching input fields from published values or cookies.
 
 Attaches a submit listener once to the selected form and pushes a data-layer event using one field value.
 
-`form_selector`, `field_name`, `event_category`, `event_action`. Emits `convivialProfiler.event` through the consent-aware event method. Choose synthetic, non-sensitive inputs for tests.
+`form_selector`, `field_name`, `event_category`, `event_action`. Emits `convivialPersonalisation.event` through the consent-aware event method. Choose synthetic, non-sensitive inputs for tests.
 
 ## `officehours`
 

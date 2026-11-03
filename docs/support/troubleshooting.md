@@ -2,7 +2,7 @@
 
 ## No impression or click events
 
-Check `window.convivialPersonalisation.analytics.events` and `window.convivialPersonalisation.consentState`. Events require analytics enabled and consent equal to `'granted'`. The current Convivial GovCMS initializer forces events off and its components do not call these methods; see [the integration status](../usage/drupal.md#events-in-convivial-govcms).
+Check `window.convivialPersonalisation.analytics.events` and `window.convivialPersonalisation.consentState`. Events require analytics enabled and consent equal to `'granted'`. Check whether the site's initializer overrides the configured analytics setting; see [impression and click events](../usage/drupal.md#impression-and-click-events).
 
 `rank()` does not emit events. A custom renderer must call `impression()` after rendering and `click()` on interaction. Inspect the array named by `engine.analytics.datalayer`, which defaults to `window.dataLayer`. If records appear there but not in an analytics dashboard, check the tag-manager triggers and delivery configuration. The library does not send these records over HTTP.
 

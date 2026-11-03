@@ -24,9 +24,7 @@ The [configuration example](../configuration/site-example.md) collects page fiel
 
 Use `settings.config` and `settings.site` when constructing an engine. Configure consent and cookie publication through `config.privacy`, analytics through `config.analytics`, and connect consent UI changes to `engine.consent()`.
 
-In Convivial GovCMS, the **Convivial Personalisation** theme-settings tab stores the complete JSON under `convivial_personalisation.configuration`. PHP attaches it as `drupalSettings.convivialPersonalisation`. The `convivial_personalisation.inc` include and `convivial_personalisation.init.js` initializer attach and start the library. Within the JSON, `config.profilers` remains the collection of objects with sources, processors and destinations.
-
-Run the site's database updates when deploying the renamed settings. The update moves existing JSON to the new key and preserves an already configured value there. Theme settings are excluded from configuration imports, so importing YAML alone does not perform this migration.
+Expose the site's configuration through `drupalSettings`, for example as `drupalSettings.convivialPersonalisation`, and pass it to the initializer. Within the JSON, `config.profilers` defines the collection of objects with sources, processors and destinations.
 
 ## Align metadata and feed rows
 
@@ -53,10 +51,10 @@ After deployment, inspect `window.convivialPersonalisation.version` to confirm t
 
 Handle feed failures and empty result lists, deduplicate IDs, preserve returned order, render accessible links, and call impressions and clicks at the appropriate time. Page learning exclusions do not replace Drupal access control or feed filtering. See [recommendation blocks](recommendations.md).
 
-## Events in Convivial GovCMS
+## Impression and click events
 
-The library implements `impression()`, `click()` and `pushEvent()`. Calling `rank()` does not call them. In the current Convivial GovCMS integration, Ranked Data and Aggregation do not call impression or click methods, and the initializer sets `analytics.events` to `false`. Consequently, these components do not produce block events in practice, even when the saved JSON enables analytics.
+The library implements `impression()`, `click()` and `pushEvent()`. Calling `rank()` does not call them. Components must call `impression()` after rendering and `click()` on link interaction; see [the recommendation example](recommendations.md).
 
-A future integration would need both component calls and a change to the initializer's analytics setting. No automatic event wiring is included in this integration. Custom integrations can follow [the recommendation example](recommendations.md), which calls the methods explicitly after rendering and on link interaction.
+Set `config.analytics.events` to `true` and check that the site's initializer preserves this setting. Inspect `window.convivialPersonalisation.analytics.events` to verify the running engine's value. Components that do not call the event methods produce no impression or click events.
 
 These APIs append records to the configured browser data layer when analytics is enabled and personalisation consent is granted. They do not send HTTP requests. A tag manager or analytics integration would need to consume those records to send them to a service. An impression means the caller recorded rendered items; the library does not measure viewport exposure.

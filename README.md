@@ -30,7 +30,7 @@ Open http://127.0.0.1:8080/example/ to use the interactive library example.
 | `docs/` | GitBook guide for the version in this repository |
 | `SOURCE.json` | Exact source revision of the initial library extraction |
 
-The runtime source was extracted from the latest local personalisation library in the GovCMS repository. Source attribution and the extraction revision are retained. Subsequent library and documentation work belongs here. No other local checkout is required to build, test or run the example.
+Source attribution and the extraction revision are retained in `SOURCE.json`. No other local checkout is required to build, test or run the example.
 
 ## Documentation and publishing
 

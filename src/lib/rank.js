@@ -158,20 +158,15 @@ function diversify(list, field) {
 
 /**
  * @param {object[]} items     rows of the JSON view (mutated)
- * @param {string[]|object|null} profiles configured names (slots split by
- *   confidence) or name-to-count map (fixed); defaults to null (fallback only)
+ * @param {string[]|object} profiles configured names (slots split by
+ *   confidence) or name-to-count map (fixed); defaults to [] (fallback only)
  * @param {number} count       items to return
  * @param {object} options     DEFAULT_RANK_OPTIONS
  * @param {object} ctx         { cfg, now, vectors: {name: {v, confidence}}, currentId, seenAge(id), suppressions, interests }
  * @returns {object[]} ranked, truncated items
  */
-export function rank(
-  items,
-  profiles = null,
-  count = 5,
-  options = {},
-  ctx = {},
-) {
+export function rank(items, profiles = [], count = 5, options = {}, ctx = {}) {
+  profiles ??= [];
   const opts = Object.assign({}, DEFAULT_RANK_OPTIONS, options || {});
   // Keep legacy callers working; the descriptive option wins, including zero.
   const requestedPriorityWeight = parseFloat(
@@ -199,12 +194,11 @@ export function rank(
   let requested;
   if (Array.isArray(profiles))
     requested = profiles.map((name) => ({ name: String(name), want: null }));
-  else if (profiles && typeof profiles === 'object')
+  else
     requested = Object.keys(profiles).map((name) => ({
       name,
       want: parseInt(profiles[name], 10) || 0,
     }));
-  else requested = [];
 
   // Candidates: hash, filter, prior.
   const live = [];

@@ -64,7 +64,7 @@ for (const page of pages) {
   document.body.append(markdown);
   assert.equal(document.querySelector('article').textContent, articleText);
   assert.equal(document.querySelector('.brand').textContent, 'Convivial Personalisation');
-  assert.doesNotMatch(articleText, /convivial-profiler(?:\.git)?\b(?!\])/i);
+  assert.doesNotMatch(articleText, /convivial[ _-]?profiler\b/i);
   assert.equal(document.querySelectorAll('[data-hosted-only], .preview-note, .preview-label').length, 0);
   assert.equal(JSON.parse(markdown.textContent), page.markdown);
   fs.mkdirSync(path.dirname(path.join(output, filename)), { recursive: true });

@@ -20,6 +20,7 @@ async function recommendations(feedUrl, container) {
   const block = 'related-content';
   const ranked = engine.rank(structuredClone(items), ['interests'], 3, { block });
   container.replaceChildren();
+  const rendered = [];
   for (const item of ranked) {
     const url = new URL(item.url, location.origin);
     if (!['http:', 'https:'].includes(url.protocol)) continue;
@@ -28,9 +29,10 @@ async function recommendations(feedUrl, container) {
     link.textContent = item.title;
     link.addEventListener('click', () => engine.click(block, item));
     container.append(link);
+    rendered.push(item);
   }
-  engine.impression(block, ranked);
-  return ranked;
+  if (rendered.length) engine.impression(block, rendered);
+  return rendered;
 }
 ```
 

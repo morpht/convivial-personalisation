@@ -13,7 +13,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-  window.convivialProfiler?.erase();
+  window.convivialPersonalisation?.erase();
   vi.clearAllTimers();
   vi.useRealTimers();
   vi.restoreAllMocks();

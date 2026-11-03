@@ -1,6 +1,6 @@
 /**
  * @file
- * Convivial Profiler utility functions.
+ * Convivial Personalisation utility functions.
  */
 
 export function getTime() {
@@ -78,12 +78,12 @@ export function safeKey(key) {
 
 export function debug(...args) {
   if (typeof console !== 'undefined' && console.debug)
-    console.debug('[convivial-profiler]', ...args);
+    console.debug('[convivial-personalisation]', ...args);
 }
 
 export function warn(...args) {
   if (typeof console !== 'undefined' && console.warn)
-    console.warn('[convivial-profiler]', ...args);
+    console.warn('[convivial-personalisation]', ...args);
 }
 
 // Keep console sentences short; the adjacent snapshot contains full values.
@@ -102,7 +102,7 @@ export function explainTrace(event, d) {
     d.candidate !== undefined ? `Candidate ${q(d.candidate)}` : 'Current page';
   switch (event) {
     case 'engine.init':
-      return `Profiler ${d.version} is ready. Consent is ${q(d.consent)}; persistent storage enabled = ${d.persist}. Debug explanations are enabled for this instance.`;
+      return `Convivial Personalisation ${d.version} is ready. Consent is ${q(d.consent)}; persistent storage enabled = ${d.persist}. Debug explanations are enabled for this instance.`;
     case 'consent.changed':
       return `Consent is now ${q(d.state)}. Persistent storage enabled = ${d.persist}; ${d.persist ? 'future profile changes may be saved' : 'values remain in page memory and persistent profile updates are disabled'}.`;
     case 'engine.erased':

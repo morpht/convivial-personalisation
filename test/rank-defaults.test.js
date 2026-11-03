@@ -10,13 +10,7 @@ it('requires explicit profile selection even when matching vectors are available
   const vector = { v: vectorOf(candidates[1]), confidence: 1 };
   const ctx = { vectors: { fast: vector, slow: vector, interests: vector } };
   const options = { priorityWeight: 0, diversify: false };
-  const fallback = rank(
-    structuredClone(candidates),
-    undefined,
-    1,
-    options,
-    ctx,
-  );
+  const fallback = rank(structuredClone(candidates), [], 1, options, ctx);
   expect(fallback).toHaveLength(1);
   expect(fallback[0]).toMatchObject({ nid: 'bus-routes', profile: 'fallback' });
   for (const selection of [undefined, null, []]) {

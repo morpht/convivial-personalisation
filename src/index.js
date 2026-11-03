@@ -692,13 +692,14 @@ export class ConvivialPersonalisation {
    * The legacy option p remains supported; priorityWeight takes precedence.
    *
    * @param {object[]} items          rows (mutated: score, sim, profile, pos, why)
-   * @param {string[]|object|null} profiles configured names or slot counts;
-   *   defaults to null (fallback only)
+   * @param {string[]|object} profiles configured names or slot counts;
+   *   defaults to [] (fallback only)
    * @param {number} count            items to return
    * @param {object} options          { removeSeenItems: true, block: 'name', ...DEFAULT_RANK_OPTIONS }
    * @returns {object[]} ranked, truncated items
    */
-  rank(items, profiles = null, count = 5, options = {}) {
+  rank(items, profiles = [], count = 5, options = {}) {
+    profiles ??= [];
     const opts = Object.assign({}, options || {});
     const block = opts.block || 'default';
     const variant = this.variant(block);
@@ -721,9 +722,7 @@ export class ConvivialPersonalisation {
       consent: this.consentState,
       variant,
     });
-    const names = Array.isArray(profiles)
-      ? profiles
-      : Object.keys(profiles || {});
+    const names = Array.isArray(profiles) ? profiles : Object.keys(profiles);
     const vectors = {};
     if (personalised)
       names.forEach((name) => {

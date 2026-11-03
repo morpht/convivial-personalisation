@@ -73,7 +73,7 @@ describe.each(['source', 'bundle'])('documentation and examples (%s)', implement
     engine.debug = true;
     expect(engine.profile.names().sort()).toEqual(['fast', 'slow']);
     const omitted = engine.rank(structuredClone(items));
-    expect(logs.mock.calls.find(call => call[2]?.event === 'rank.start')[2].profiles).toBeNull();
+    expect(logs.mock.calls.find(call => call[2]?.event === 'rank.start')[2].profiles).toEqual([]);
     const unspecified = engine.rank(structuredClone(items), null);
     const empty = engine.rank(structuredClone(items), []);
     expect(omitted).toHaveLength(items.length);
@@ -84,6 +84,10 @@ describe.each(['source', 'bundle'])('documentation and examples (%s)', implement
     expect(engine.rank(structuredClone(items), null, 1, { fallback: 'none' })).toEqual([]);
     expect(engine.rank(structuredClone(items), undefined, 1, { fallback: 'none' })).toEqual([]);
     expect(engine.rank(structuredClone(items), [], 1, { fallback: 'none' })).toEqual([]);
+    const starts = logs.mock.calls.filter(call => call[2]?.event === 'rank.start');
+    expect(starts).toHaveLength(6);
+    starts.forEach(call => expect(call[2].profiles).toEqual([]));
+    expect(engine.snapshot().blocks.find(block => block.block === 'default').profiles).toEqual([]);
   });
 
   it('learns both profiles and ranks gardening first without persisting the demo', async () => {

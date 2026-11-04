@@ -15,7 +15,7 @@ console.log(engine.snapshot());
 engine.debug = true;
 ```
 
-The version should be `0.0.1`. If the page has another version, inspect the served bundle and the site's asset cache. Enable Verbose browser-console messages and filter on the trace prefix `[convivial-personalisation]`. Reproduce one collection or ranking operation; repeated collection can learn the same page more than once.
+The version should be `0.1.0`. If the page has another version, inspect the served bundle and the site's asset cache. Enable Verbose browser-console messages and filter on the trace prefix `[convivial-personalisation]`. Reproduce one collection or ranking operation; repeated collection can learn the same page more than once.
 
 ## A configured profile is missing
 
@@ -43,9 +43,13 @@ Temporarily set `removeSeenItems: false` and `excludeCurrent: false` to check wh
 
 The library selects per profile in request order, may reorder for variety, and appends fallback. The combined results can therefore be out of score order. Render `pos` order as returned. Check `prior` and `priorityWeight` when feed order outweighs similarity.
 
-## Empty explanation labels
+## Empty or unlabelled explanations
 
-`why` uses top dimension counters. Vector learning alone does not populate those counters. Add a `dimension` processor for key fields if the component needs their labels. Text matches can still be relevant with an empty `why` array.
+`result.why` is built from the items a profile selected. It is empty when every row is fallback, when `explain` is `false`, or when no term passes the noise floor. With one selected row, only terms carrying at least `whyFloor` of its similarity are kept. Lower `whyFloor` or raise `whyMax` to see more terms, and read `result.why_detail` for the shares.
+
+A key shown as its machine name, such as `topic-ai`, has no label. Add it to `config.data`, `profile.labels` or the JSON at `profile.labels_url`, then check `engine.labels()`. A fetched label file is cached for a day in `localStorage.convivial_personalisation_labels`; remove that entry to refetch. Labels never change scores or order.
+
+Page metadata and candidate rows must use keys only. A value such as `topic-ai|Artificial intelligence` is hashed as one unknown key and matches nothing.
 
 ## Missing published values
 

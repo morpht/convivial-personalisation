@@ -24,7 +24,7 @@ Use a positive numeric TTL in seconds, or omit it for a rule without expiry. Rep
 | `term` | Full key feature such as `topics.gardening`; use its lowercased key |
 | A field name, such as `topics` | Any comma-separated key value in that field, compared case-insensitively |
 
-A field suppression checks its ID portion in `id|Label`; it does not match the display label or stemmed text tokens.
+A field suppression compares the key value; it does not match a display label or stemmed text tokens.
 
 ## Configure a goal pipeline
 

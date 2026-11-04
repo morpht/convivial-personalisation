@@ -7,8 +7,25 @@
  * scores them by cosine similarity against the requested profiles, removes
  * the current page and (optionally) seen items, splits `count` slots between
  * the profiles, and returns the items ranked and truncated. The row objects
- * are mutated in place (`score`, `sim`, `profile`, `pos`, `why` added) and
- * returned in a new array.
+ * are mutated in place (`score`, `sim`, `profile`, `pos` added).
+ *
+ * The result is an object:
+ *
+ *   {
+ *     items,       // the ranked rows, in render order
+ *     why,         // ['Artificial intelligence', 'drupal', 'Editors'] — the
+ *                  // strongest matching terms across the block as a whole
+ *     why_detail,  // [{ term, label, field, kind, share, items }] behind `why`
+ *     profiles,    // { fast: { used: true, confidence: 0.8 }, ... }
+ *     count,       // items.length
+ *   }
+ *
+ * `why` is a numerical decomposition of the ranking signal itself: each picked
+ * item's cosine similarity is split back onto its tokens (termContributions),
+ * the positive parts are summed per term across the picked items, and the
+ * terms that carry the most of the block's similarity are returned. It works
+ * identically for taxonomy keys and for free text, so a block of RSS items
+ * with only a title and description still gets a `why`.
  *
  * No server, no page blending: it is the visitor's profiles against the rows.
  */
@@ -20,6 +37,7 @@ import {
   termKeys,
   termOf,
   valuesOf,
+  termContributions,
 } from './vector';
 import { decayFactor } from './profile';
 
@@ -35,7 +53,9 @@ export const DEFAULT_RANK_OPTIONS = {
   recencyHalfLife: 30 * 86400,
   fallback: 'order', // 'order' pads from the view order | 'none' returns fewer
   diversify: true, // avoid two adjacent items sharing the first key field's value
-  explain: true, // items carry `why`: labels of matching interests
+  explain: true, // compute `why` for the block (false → why: [])
+  whyMax: null, // terms in `why`; null → profile.why_max (3)
+  whyFloor: 0.1, // a term seen in one item only needs this share of the block's similarity
 };
 
 // ---- helpers ---------------------------------------------------------------
@@ -122,16 +142,93 @@ function suppressionFor(item, suppressions, cfg) {
   return { excluded, factor };
 }
 
-function explain(item, interests, cfg) {
-  const why = [];
-  Object.keys(interests || {}).forEach((field) => {
-    const top = (interests[field] || []).map((v) => String(v).toLowerCase());
-    valuesOf(item[field]).forEach((v) => {
-      const t = termOf(v);
-      if (t && top.indexOf(t.id.toLowerCase()) > -1) why.push(t.name || t.id);
+/**
+ * Block-level `why`: the terms that carry most of the similarity between the
+ * picked (non-fallback) items and the profiles that picked them.
+ *
+ * Per picked item, termContributions() splits sim(item, profile) onto the
+ * item's tokens. Positive contributions from fields outside `why_exclude`
+ * are summed per token across the block. A token is kept when at least two
+ * items share it, or when it alone carries `whyFloor` of the block's total.
+ * Tokens are sorted by share, labelled (key → labels[key] || key; text →
+ * surface word), de-duplicated by label and capped at `whyMax`.
+ *
+ * @param {object[]} picked rows with `_v` and `profile` set
+ * @param {object} queries { name: { q: Float32Array } } the vectors that picked
+ * @param {object} labels key → label lookup (presentation only)
+ * @returns {{ why: string[], why_detail: object[] }}
+ */
+export function aggregateWhy(picked, queries, labels, cfg, opts, trace) {
+  const max =
+    opts.whyMax !== null && opts.whyMax !== undefined
+      ? Math.max(0, parseInt(opts.whyMax, 10) || 0)
+      : cfg.why_max;
+  const floor = Number.isFinite(parseFloat(opts.whyFloor))
+    ? parseFloat(opts.whyFloor)
+    : DEFAULT_RANK_OPTIONS.whyFloor;
+  const skip = new Set((cfg.why_exclude || []).map(String));
+  const sums = new Map(); // token → { token, field, kind, surface, total, items:Set }
+  let total = 0;
+  picked.forEach((it) => {
+    const q = it.profile && queries[it.profile];
+    if (!q || !q.q || !it._v) return;
+    termContributions(it, q.q, cfg).forEach((t) => {
+      if (t.contribution <= 0 || skip.has(t.field)) return;
+      total += t.contribution;
+      let e = sums.get(t.token);
+      if (!e) {
+        e = {
+          token: t.token,
+          field: t.field,
+          kind: t.kind,
+          surface: t.surface,
+          total: 0,
+          items: new Set(),
+        };
+        sums.set(t.token, e);
+      }
+      e.total += t.contribution;
+      e.items.add(it.id);
     });
   });
-  return why;
+  const labelOf = (e) => {
+    if (e.kind === 'key') {
+      const key = e.token.slice(e.field.length + 1);
+      const id = e.surface || key;
+      return (labels && (labels[id] || labels[key])) || id;
+    }
+    return e.surface || e.token;
+  };
+  const seen = new Set();
+  const detail = [];
+  Array.from(sums.values())
+    .map((e) => Object.assign(e, { share: total ? e.total / total : 0 }))
+    .filter((e) => e.items.size >= 2 || e.share >= floor)
+    .sort((a, b) => b.share - a.share || a.token.localeCompare(b.token))
+    .forEach((e) => {
+      const label = labelOf(e);
+      const dedupe = String(label).toLowerCase();
+      if (seen.has(dedupe)) return;
+      seen.add(dedupe);
+      detail.push({
+        term: e.token,
+        label,
+        field: e.field,
+        kind: e.kind,
+        share: e.share,
+        items: Array.from(e.items),
+      });
+    });
+  const kept = detail.slice(0, max);
+  trace?.('rank.why', () => ({
+    why: kept.map((d) => d.label),
+    considered: sums.size,
+    kept: kept.length,
+    floor,
+    max,
+    detail: kept,
+  }));
+  return { why: kept.map((d) => d.label), why_detail: kept };
 }
 
 function primaryKey(item, field) {
@@ -162,8 +259,8 @@ function diversify(list, field) {
  *   confidence) or name-to-count map (fixed); defaults to [] (fallback only)
  * @param {number} count       items to return
  * @param {object} options     DEFAULT_RANK_OPTIONS
- * @param {object} ctx         { cfg, now, vectors: {name: {v, confidence}}, currentId, seenAge(id), suppressions, interests }
- * @returns {object[]} ranked, truncated items
+ * @param {object} ctx         { cfg, now, vectors: {name: {v, confidence}}, currentId, seenAge(id), suppressions, labels }
+ * @returns {{items: object[], why: string[], why_detail: object[], profiles: object, count: number}}
  */
 export function rank(items, profiles = [], count = 5, options = {}, ctx = {}) {
   profiles ??= [];
@@ -185,9 +282,16 @@ export function rank(items, profiles = [], count = 5, options = {}, ctx = {}) {
   const n = rows.length;
   const trace = ctx.trace;
   trace?.('rank.options', { options: opts, candidates: n, limit });
+  const result = (out, why, profilesUsed) => ({
+    items: out,
+    why: why.why,
+    why_detail: why.why_detail,
+    profiles: profilesUsed,
+    count: out.length,
+  });
   if (!n || !limit) {
     trace?.('rank.complete', { items: [], reason: 'no candidates or slots' });
-    return [];
+    return result([], { why: [], why_detail: [] }, {});
   }
 
   // Requested profiles → [{name, want|null}]
@@ -433,19 +537,43 @@ export function rank(items, profiles = [], count = 5, options = {}, ctx = {}) {
 
   out.forEach((it, pos) => {
     it.pos = pos + 1;
-    if (opts.explain) it.why = explain(it, ctx.interests, cfg);
   });
+
+  // Block-level explanation from the picked (non-fallback) items.
+  const byName = {};
+  queries.forEach((q) => {
+    byName[q.name] = q;
+  });
+  const why = opts.explain
+    ? aggregateWhy(
+        out.filter((it) => it.profile !== 'fallback'),
+        byName,
+        ctx.labels || {},
+        cfg,
+        opts,
+        trace,
+      )
+    : { why: [], why_detail: [] };
+  const profilesUsed = {};
+  requested.forEach((r) => {
+    const vec = (ctx.vectors && ctx.vectors[r.name]) || {};
+    profilesUsed[r.name] = {
+      used: out.some((it) => it.profile === r.name),
+      confidence: vec.confidence || 0,
+    };
+  });
+
   trace?.('rank.complete', () => ({
     requested: limit,
     remainingCandidates: live.length,
     fallbackCount: out.filter((it) => it.profile === 'fallback').length,
-    items: out.map(({ id, pos, profile, sim, score, why }) => ({
+    why: why.why,
+    items: out.map(({ id, pos, profile, sim, score }) => ({
       id,
       pos,
       profile,
       sim,
       score,
-      why,
     })),
   }));
   // Tidy working fields on every row.
@@ -455,5 +583,5 @@ export function rank(items, profiles = [], count = 5, options = {}, ctx = {}) {
     delete it._prior;
     delete it._i;
   });
-  return out;
+  return result(out, why, profilesUsed);
 }

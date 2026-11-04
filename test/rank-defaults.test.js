@@ -11,8 +11,14 @@ it('requires explicit profile selection even when matching vectors are available
   const ctx = { vectors: { fast: vector, slow: vector, interests: vector } };
   const options = { priorityWeight: 0, diversify: false };
   const fallback = rank(structuredClone(candidates), [], 1, options, ctx);
-  expect(fallback).toHaveLength(1);
-  expect(fallback[0]).toMatchObject({ nid: 'bus-routes', profile: 'fallback' });
+  expect(fallback.items).toHaveLength(1);
+  expect(fallback.count).toBe(1);
+  expect(fallback.why).toEqual([]);
+  expect(fallback.profiles).toEqual({});
+  expect(fallback.items[0]).toMatchObject({
+    nid: 'bus-routes',
+    profile: 'fallback',
+  });
   for (const selection of [undefined, null, []]) {
     expect(
       rank(structuredClone(candidates), selection, 1, options, ctx),
@@ -25,7 +31,7 @@ it('requires explicit profile selection even when matching vectors are available
         { ...options, fallback: 'none' },
         ctx,
       ),
-    ).toEqual([]);
+    ).toEqual({ items: [], why: [], why_detail: [], profiles: {}, count: 0 });
   }
   for (const selection of [['interests'], { interests: 1 }]) {
     const selected = rank(
@@ -35,10 +41,15 @@ it('requires explicit profile selection even when matching vectors are available
       options,
       ctx,
     );
-    expect(selected).toHaveLength(1);
-    expect(selected[0]).toMatchObject({
+    expect(selected.items).toHaveLength(1);
+    expect(selected.items[0]).toMatchObject({
       nid: 'garden-tools',
       profile: 'interests',
     });
+    expect(selected.profiles).toEqual({
+      interests: { used: true, confidence: 1 },
+    });
+    // A single picked item: its one key carries all of the similarity.
+    expect(selected.why).toEqual(['gardening']);
   }
 });

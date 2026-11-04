@@ -6,12 +6,16 @@
  *
  *   const cp = new ConvivialPersonalisation(config, siteId, options);
  *   cp.collect().then(() => {
- *     const items = cp.rank(rows, ['interests'], 5, { removeSeenItems: true });
+ *     const { items, why } = cp.rank(rows, ['interests'], 5, { removeSeenItems: true });
  *   });
  *
  * Profiles live in localStorage under `convivial_personalisation`. Optional
  * event methods add records to the local data layer; the site analytics
  * integration controls their delivery.
+ *
+ * `why` labels come from, in order of precedence: config.profile.labels,
+ * the JSON at config.profile.labels_url (fetched once a day), and the
+ * key → label maps in config.data. A key without a label is shown as the key.
  *
  * Set config.debug = true before construction to trace the initial collection.
  * options.debug overrides config.debug (including false). At runtime use
@@ -43,6 +47,8 @@ import { Profile, decayFactor } from './lib/profile';
 import { rank as rankItems, DEFAULT_RANK_OPTIONS } from './lib/rank';
 import {
   vectorOf,
+  tokensOf,
+  termContributions,
   cosine,
   encode,
   decode,
@@ -65,8 +71,10 @@ import {
   warn,
 } from './lib/utility';
 
-export const VERSION = '0.0.1';
+export const VERSION = '0.1.0';
 const CONSENT_KEY = 'convivial_personalisation_consent';
+const LABELS_KEY = 'convivial_personalisation_labels';
+const LABELS_TTL = 86400; // seconds a fetched labels_url is reused
 
 export const DEFAULT_PRIVACY = {
   consent_default: 'granted', // 'granted' (opt-out model) | 'denied' (opt-in model)
@@ -135,9 +143,14 @@ export class ConvivialPersonalisation {
     this._folds = [];
     this._blocks = {};
     this._generation = 0;
+    this._remoteLabels = {}; // from profile.labels_url, when configured
     this.ready = Promise.resolve();
     this.collected = false;
     if (!this.personalised) this.erase();
+    // Resolves once labels_url (if any) has been read; rank() never waits for it.
+    this.labelsReady = this.profileConfig.labels_url
+      ? this._loadRemoteLabels()
+      : Promise.resolve();
 
     if (typeof window !== 'undefined') {
       window.convivialPersonalisation = this;
@@ -690,12 +703,12 @@ export class ConvivialPersonalisation {
    * priorityWeight controls prior priority: 0 = similarity, 1 = prior only.
    * The legacy option p remains supported; priorityWeight takes precedence.
    *
-   * @param {object[]} items          rows (mutated: score, sim, profile, pos, why)
+   * @param {object[]} items          rows (mutated: score, sim, profile, pos)
    * @param {string[]|object} profiles configured names or slot counts;
    *   defaults to [] (fallback only)
    * @param {number} count            items to return
    * @param {object} options          { removeSeenItems: true, block: 'name', ...DEFAULT_RANK_OPTIONS }
-   * @returns {object[]} ranked, truncated items
+   * @returns {{items: object[], why: string[], why_detail: object[], profiles: object, count: number, variant: string}}
    */
   rank(items, profiles = [], count = 5, options = {}) {
     profiles ??= [];
@@ -735,33 +748,84 @@ export class ConvivialPersonalisation {
       currentId: current && current.id !== undefined ? current.id : undefined,
       suppressions: personalised ? this.profile.suppressions() : [],
       seenAge: (id) => (personalised ? this.profile.seenAge(id) : null),
-      interests: personalised ? this._interests() : {},
+      labels: this.labels(),
       trace,
     };
-    const out = rankItems(items, profiles, count, opts, ctx);
+    const result = rankItems(items, profiles, count, opts, ctx);
+    result.variant = variant;
     this._blocks[block] = {
       variant,
-      items: out,
+      items: result.items,
+      why: result.why,
       profiles: names,
       count,
       at: this.now(),
     };
+    return result;
+  }
+
+  /**
+   * Key → label lookup used to present `why`. Precedence: profile.labels,
+   * then labels_url (fetched once a day), then the key → label maps in
+   * config.data. Presentation only; never part of a vector.
+   */
+  labels() {
+    const out = {};
+    const data = this.config.data || {};
+    Object.keys(data).forEach((group) => {
+      if (isObj(data[group])) Object.assign(out, data[group]);
+    });
+    Object.assign(out, this._remoteLabels, this.profileConfig.labels);
     return out;
   }
 
-  /** Top dimension values per key field, for `why` labels. */
-  _interests() {
-    const out = {};
-    Object.keys(this.profileConfig.fields).forEach((f) => {
-      if (this.profileConfig.text_fields.indexOf(f) > -1) return;
-      let tops = this.profile.tops(f, 3);
-      // Existing destinations still use dimensions without the field prefix.
-      if (!tops.length && f.startsWith('profile_')) {
-        tops = this.profile.tops(f.slice('profile_'.length), 3);
+  /** Fetch profile.labels_url ([{ key, label }] or { key: label }) with a 24h localStorage cache. */
+  _loadRemoteLabels() {
+    const url = this.profileConfig.labels_url;
+    const now = this.now();
+    const apply = (rows) => {
+      const map = {};
+      if (Array.isArray(rows))
+        rows.forEach((r) => {
+          if (r && r.key !== undefined && r.label) map[String(r.key)] = r.label;
+        });
+      else if (isObj(rows)) Object.assign(map, rows);
+      this._remoteLabels = map;
+      this.trace('labels.loaded', { url, count: Object.keys(map).length });
+    };
+    if (this.available) {
+      try {
+        const cached = JSON.parse(localStorage.getItem(LABELS_KEY) || 'null');
+        if (cached && cached.url === url && cached.at + LABELS_TTL > now) {
+          apply(cached.labels);
+          return Promise.resolve();
+        }
+      } catch (e) {
+        /* ignore */
       }
-      if (tops.length) out[f] = tops;
-    });
-    return out;
+    }
+    if (typeof fetch !== 'function') return Promise.resolve();
+    return fetch(url, { credentials: 'same-origin' })
+      .then((r) =>
+        r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status)),
+      )
+      .then((json) => {
+        apply(json);
+        if (this.available) {
+          try {
+            localStorage.setItem(
+              LABELS_KEY,
+              JSON.stringify({ url, at: now, labels: this._remoteLabels }),
+            );
+          } catch (e) {
+            /* ignore */
+          }
+        }
+      })
+      .catch((error) => {
+        this.trace('labels.error', { url, error });
+        warn('labels_url failed:', error);
+      });
   }
 
   /** No visitor identifiers or persistent experiment assignment. */
@@ -769,10 +833,19 @@ export class ConvivialPersonalisation {
     return 'personalised';
   }
 
-  /** Record a block impression (dataLayer event `cp.block_impression`). */
-  impression(block, items) {
+  /**
+   * Record a block impression (dataLayer event `cp.block_impression`).
+   * `result` may be the object rank() returned, a plain array of items, or
+   * omitted (the block's last ranking is used).
+   */
+  impression(block, result) {
     const b = this._blocks[block] || {};
-    const list = items || b.items || [];
+    const list = Array.isArray(result)
+      ? result
+      : (result && result.items) || b.items || [];
+    const why = Array.isArray(result)
+      ? b.why || []
+      : (result && result.why) || b.why || [];
     if (!this.analytics.events) return;
     this.pushEvent({
       event: 'cp.block_impression',
@@ -781,6 +854,7 @@ export class ConvivialPersonalisation {
       cp_profiles: list.map((i) => i.profile).join(','),
       cp_items: list.map((i) => i.id).join(','),
       cp_count: list.length,
+      cp_why: why.join(','),
     });
   }
 
@@ -836,6 +910,7 @@ export class ConvivialPersonalisation {
         block: k,
         variant: this._blocks[k].variant,
         profiles: this._blocks[k].profiles,
+        why: this._blocks[k].why,
         items: this._blocks[k].items.map((i) => ({
           id: i.id,
           profile: i.profile,
@@ -874,6 +949,8 @@ export class ConvivialPersonalisation {
 ConvivialPersonalisation.VERSION = VERSION;
 ConvivialPersonalisation.vector = {
   vectorOf,
+  tokensOf,
+  termContributions,
   cosine,
   encode,
   decode,

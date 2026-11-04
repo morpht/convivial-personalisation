@@ -20,16 +20,22 @@
  *   }
  *
  * Text fields are tokenised (stemmed words + bigrams). Every other field is a
- * key field: each value becomes the structural token `<field>.<value>`; a
- * value written as `id|Label` also contributes the label's words as text.
- * Key fields accept comma-separated strings or legacy arrays. Commas delimit
- * terms; spaces within a term stay intact. Text fields keep their full text
- * for tokenisation, including bigrams across punctuation.
+ * key field: each value is a machine name (key) and becomes the structural
+ * token `<field>.<value>`. Keys carry no labels; labels are a presentation
+ * lookup for `why` (profile.labels / labels_url / config.data) and never
+ * enter the hash. Key fields accept comma-separated strings or arrays.
+ * Commas delimit terms; spaces within a term stay intact. Text fields keep
+ * their full text for tokenisation, including bigrams across punctuation.
+ *
+ * tokensOf() is the single source of (token, field, weight, tf) for an item.
+ * vectorOf() hashes those tokens; termContributions() decomposes a cosine
+ * similarity back onto them for `why`. Because both read the same list they
+ * cannot disagree about what an item contains.
  */
 
 import { tokenize } from './text';
 
-export const VECTOR_VERSION = 3;
+export const VECTOR_VERSION = 3; // 3: keys only (no id|Label parsing); stored profiles reset once
 
 export const DEFAULT_PROFILE_CONFIG = {
   version: VECTOR_VERSION,
@@ -57,6 +63,11 @@ export const DEFAULT_PROFILE_CONFIG = {
   keep_short: [],
   bigrams: true,
   exclude: { types: [], terms: [], fields: [] },
+  // Presentation only (never hashed, never part of configHash):
+  labels: {}, // key → label overrides for `why`
+  labels_url: null, // optional JSON of [{ key, label }] fetched once a day
+  why_max: 3, // terms returned in rank().why
+  why_exclude: ['type', 'profile_type'], // fields every item shares explain nothing
 };
 
 // ---- crc32 -----------------------------------------------------------------
@@ -102,11 +113,21 @@ export function mergeProfileConfig(cfg = {}) {
     (cfg && (cfg.stopwords || cfg.stopwords_site)) || [],
   );
   out.keep_short = [].concat((cfg && cfg.keep_short) || []);
+  out.labels = Object.assign({}, (cfg && cfg.labels) || {});
+  out.why_exclude = [].concat(
+    cfg && cfg.why_exclude !== undefined
+      ? cfg.why_exclude
+      : DEFAULT_PROFILE_CONFIG.why_exclude,
+  );
   out.dims = Math.max(16, parseInt(out.dims, 10) || 256);
+  out.why_max = Math.max(0, parseInt(out.why_max, 10) || 0);
   return out;
 }
 
-/** Stable hash of the parameters that change every vector; stored with each profile. */
+/**
+ * Stable hash of the parameters that change every vector; stored with each
+ * profile. Labels and the `why_*` settings are presentation only and excluded.
+ */
 export function configHash(cfg) {
   const c = mergeProfileConfig(cfg);
   const sortedObj = (o) =>
@@ -135,19 +156,16 @@ export function configHash(cfg) {
 
 // ---- items -----------------------------------------------------------------
 
-/** Split a value into {id, name}: "id|Label", {id,name}, {key,label}, or a bare id. */
+/**
+ * A key value is a machine name: the trimmed string, or null when empty.
+ * Objects and booleans are not a supported value shape (keys only).
+ */
 export function termOf(v) {
-  if (v === undefined || v === null || v === '') return null;
-  if (typeof v === 'object') {
-    const id =
-      v.id !== undefined ? v.id : v.key !== undefined ? v.key : v.value;
-    if (id === undefined || id === null || id === '') return null;
-    return { id: String(id).trim(), name: v.name || v.label || undefined };
-  }
-  const parts = String(v).split('|');
-  const id = parts[0].trim();
-  if (!id) return null;
-  return { id, name: (parts[1] || '').trim() || undefined };
+  if (v === undefined || v === null || v === '' || v === true || v === false)
+    return null;
+  if (typeof v === 'object') return null;
+  const id = String(v).trim();
+  return id ? { id } : null;
 }
 
 /** Split comma lists, trimming empty entries; retain objects and legacy arrays. */
@@ -202,27 +220,28 @@ export function isExcluded(item, cfg, trace = null) {
   return result(false, 'no page flag, type or term matched an exclusion');
 }
 
-// ---- vectors ---------------------------------------------------------------
+// ---- tokens ----------------------------------------------------------------
 
 /**
- * Build the vector for an item: an object whose keys are the configured
- * field names (strings or arrays of strings / {id,name}).
+ * Every (token, field, weight, tf) an item produces, plus the surface word
+ * for text tokens and the key id for key tokens. Shared by vectorOf() and
+ * termContributions() so the two never disagree.
  *
- * @returns {Float32Array|null} unit vector, or null if the item has no tokens.
+ * @returns {Array<{token, field, weight, tf, kind: 'key'|'text', surface}>}
  */
-export function vectorOf(item, cfg, trace = null) {
+export function tokensOf(item, cfg, trace = null) {
   const c = mergeProfileConfig(cfg);
-  const D = c.dims;
-  const acc = new Float32Array(D);
-  const counts = new Map();
-  const add = (token, weight) => {
+  const counts = new Map(); // "token\u0001field\u0001weight" → entry
+  const add = (token, field, weight, surface, kind) => {
     if (!token || !weight) return;
-    const key = token + '\u0001' + weight;
-    counts.set(key, (counts.get(key) || 0) + 1);
+    const key = token + '\u0001' + field + '\u0001' + weight;
+    const e = counts.get(key);
+    if (e) e.tf += 1;
+    else counts.set(key, { token, field, weight, tf: 1, surface, kind });
   };
   const addText = (text, weight, field) => {
     if (!text || !weight) return;
-    const { tokens, bigrams } = tokenize(
+    const { tokens, bigrams, surface } = tokenize(
       String(text),
       c,
       trace ? (event, details) => trace(event, { field, ...details }) : null,
@@ -235,10 +254,12 @@ export function vectorOf(item, cfg, trace = null) {
       bigrams: bigrams.slice(0, Math.max(0, c.text_cap - 1)),
       textCap: c.text_cap,
     }));
-    tokens.slice(0, c.text_cap).forEach((t) => add(t, weight));
+    tokens
+      .slice(0, c.text_cap)
+      .forEach((t) => add(t, field, weight, surface[t], 'text'));
     bigrams
       .slice(0, Math.max(0, c.text_cap - 1))
-      .forEach((b) => add(b, weight));
+      .forEach((b) => add(b, field, weight, surface[b], 'text'));
   };
   const exTerms = new Set(
     (c.exclude.terms || []).map((k) => String(k).toLowerCase()),
@@ -267,13 +288,10 @@ export function vectorOf(item, cfg, trace = null) {
       values,
     });
     if (isText) {
-      values.forEach((v) =>
-        addText(
-          typeof v === 'object' ? v.name || v.label || v.value : v,
-          weight,
-          field,
-        ),
-      );
+      values.forEach((v) => {
+        if (v === undefined || v === null || typeof v === 'object') return;
+        addText(v, weight, field);
+      });
       return;
     }
     values.forEach((v) => {
@@ -284,29 +302,43 @@ export function vectorOf(item, cfg, trace = null) {
         trace?.('vector.term.skipped', { field, key, reason: 'excluded' });
         return;
       }
-      add(key, weight); // precise, curated
-      if (t.name) addText(t.name, weight, field); // fuzzy, lexical
+      add(key, field, weight, t.id, 'key');
     });
   });
+  return Array.from(counts.values());
+}
 
-  if (counts.size === 0) {
+const slotOf = (token, dims) => {
+  const h = crc32(token);
+  return { slot: h % dims, sign: (h >>> 8) & 1 ? 1 : -1 };
+};
+
+// ---- vectors ---------------------------------------------------------------
+
+/**
+ * Build the vector for an item: an object whose keys are the configured
+ * field names (strings, comma strings or arrays of strings).
+ *
+ * @returns {Float32Array|null} unit vector, or null if the item has no tokens.
+ */
+export function vectorOf(item, cfg, trace = null) {
+  const c = mergeProfileConfig(cfg);
+  const D = c.dims;
+  const toks = tokensOf(item, c, trace);
+  if (!toks.length) {
     trace?.('vector.empty', { reason: 'no tokens' });
     return null;
   }
-  counts.forEach((tf, key) => {
-    const i = key.indexOf('\u0001');
-    const token = key.slice(0, i);
-    const weight = parseFloat(key.slice(i + 1));
-    const h = crc32(token);
-    const slot = h % D;
-    const sign = (h >>> 8) & 1 ? 1 : -1;
-    const contribution = sign * weight * (1 + Math.log(tf));
+  const acc = new Float32Array(D);
+  toks.forEach((e) => {
+    const { slot, sign } = slotOf(e.token, D);
+    const contribution = sign * e.weight * (1 + Math.log(e.tf));
     const before = acc[slot];
     acc[slot] += contribution;
     trace?.('vector.token', {
-      token,
-      weight,
-      tf,
+      token: e.token,
+      weight: e.weight,
+      tf: e.tf,
       slot,
       sign,
       contribution,
@@ -326,6 +358,43 @@ export function vectorOf(item, cfg, trace = null) {
     vector: Array.from(acc),
   }));
   return acc;
+}
+
+/**
+ * Decompose an item's cosine similarity to a profile vector by token.
+ * contribution(t) = value(t) × P[slot(t)] / (|item| × |P|), so the
+ * contributions sum to cosine(vectorOf(item), profileVec) exactly. This is
+ * what rank().why is built from: the same signal that ranked the item.
+ *
+ * @returns {Array<{token, field, kind, surface, contribution}>}
+ */
+export function termContributions(item, profileVec, cfg) {
+  const c = mergeProfileConfig(cfg);
+  const D = c.dims;
+  const toks = tokensOf(item, c);
+  if (!toks.length || !profileVec) return [];
+  const raw = toks.map((e) => {
+    const { slot, sign } = slotOf(e.token, D);
+    return { e, slot, value: sign * e.weight * (1 + Math.log(e.tf)) };
+  });
+  const perSlot = new Float32Array(D);
+  raw.forEach((r) => {
+    perSlot[r.slot] += r.value;
+  });
+  let norm = 0;
+  for (let i = 0; i < D; i++) norm += perSlot[i] * perSlot[i];
+  norm = Math.sqrt(norm) || 1;
+  let pnorm = 0;
+  for (let i = 0; i < profileVec.length && i < D; i++)
+    pnorm += profileVec[i] * profileVec[i];
+  pnorm = Math.sqrt(pnorm) || 1;
+  return raw.map((r) => ({
+    token: r.e.token,
+    field: r.e.field,
+    kind: r.e.kind,
+    surface: r.e.surface,
+    contribution: (r.value * (profileVec[r.slot] || 0)) / (norm * pnorm),
+  }));
 }
 
 /** Cosine similarity of two vectors (any array kind). */

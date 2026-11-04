@@ -24,7 +24,8 @@ Confidence indicates the strength of the available learned interests, on a scale
 
 ```javascript
 console.table(engine.snapshot().profiles);
-const ranked = engine.rank(structuredClone(items), ['interests'], 3);
+const result = engine.rank(structuredClone(items), ['interests'], 3);
+console.log(result.profiles);
 ```
 
-The snapshot helps check which profiles have been learned and their current confidence. The builder can configure multiple profiles when different learning periods are useful; see [profiles with different half-lives](../usage/fast-and-slow.md).
+The snapshot helps check which profiles have been learned and their current confidence. `result.profiles` reports, for each requested name, whether it selected a row in that call and the confidence it had. The builder can configure multiple profiles when different learning periods are useful; see [profiles with different half-lives](../usage/fast-and-slow.md).

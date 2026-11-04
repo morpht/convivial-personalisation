@@ -33,35 +33,56 @@ it('cookie-only cleanup preserves an intent published in memory without consent'
   expect(cp.published('intent')).toBeNull();
 });
 
-it('explains prefixed profile fields using existing unprefixed dimensions', () => {
-  const cp = new ConvivialPersonalisation({}, 'test');
-  cp.profile.dimensionAdd('topic', 'topic-design');
-  const [row] = cp.rank(
-    [{ nid: '1', profile_topic: ['topic-design|Design'] }],
-    [],
-    1,
+it('explains a block with labels from config.data and leaves fallback unexplained', () => {
+  const cp = new ConvivialPersonalisation(
+    { data: { topics: { 'topic-design': 'Design' } } },
+    'test',
   );
-  expect(row.why).toEqual(['Design']);
-  expect(cp.profile.dimension('topic')).toEqual({
-    'topic-design': 1,
+  const items = [{ nid: '1', profile_topic: ['topic-design'] }];
+  // Fallback only: nothing was picked by a profile, so there is nothing to explain.
+  const fallback = cp.rank(structuredClone(items), [], 1);
+  expect(fallback.items[0]).toMatchObject({ id: '1', profile: 'fallback' });
+  expect(fallback.items[0]).not.toHaveProperty('why');
+  expect(fallback.why).toEqual([]);
+  // A learned profile: the key that matched is shown with its label.
+  cp.profile.fold(
+    'fast',
+    0,
+    ConvivialPersonalisation.vector.vectorOf(items[0], cp.profileConfig),
+  );
+  const picked = cp.rank(structuredClone(items), ['fast'], 1);
+  expect(picked.items[0]).toMatchObject({ id: '1', profile: 'fast' });
+  expect(picked.why).toEqual(['Design']);
+  expect(picked.why_detail[0]).toMatchObject({
+    term: 'profile_topic.topic-design',
+    label: 'Design',
+    field: 'profile_topic',
+    kind: 'key',
+    items: ['1'],
   });
+  expect(picked.profiles).toEqual({ fast: { used: true, confidence: 1 } });
+  expect(cp.snapshot().blocks[0].why).toEqual(['Design']);
 });
 
-it('prefers an explicitly configured prefixed dimension for explanations', () => {
-  const cp = new ConvivialPersonalisation({}, 'test');
-  cp.profile.dimensionAdd('profile_topic', 'topic-design');
-  cp.profile.dimensionAdd('topic', 'topic-housing');
-  const [row] = cp.rank(
-    [
-      {
-        nid: '1',
-        profile_topic: ['topic-design|Design', 'topic-housing|Housing'],
-      },
-    ],
-    [],
-    1,
+it('prefers profile.labels over config.data and shows unlabelled keys as keys', () => {
+  const cp = new ConvivialPersonalisation(
+    {
+      data: { topics: { 'topic-design': 'Design' } },
+      profile: { labels: { 'topic-design': 'Service design' } },
+    },
+    'test',
   );
-  expect(row.why).toEqual(['Design']);
+  const item = { nid: '1', profile_topic: ['topic-design', 'topic-housing'] };
+  cp.profile.fold(
+    'fast',
+    0,
+    ConvivialPersonalisation.vector.vectorOf(item, cp.profileConfig),
+  );
+  const { why } = cp.rank([structuredClone(item)], ['fast'], 1);
+  expect(why).toEqual(
+    expect.arrayContaining(['Service design', 'topic-housing']),
+  );
+  expect(cp.labels()).toEqual({ 'topic-design': 'Service design' });
 });
 
 it.each([['one'], ['one', 'two']])(
@@ -317,7 +338,7 @@ it('normalizes direct legacy writes and array mutations before profiling and per
       [{ nid: '1', profile_topic: ['housing', 'transport'] }],
       ['fast'],
       1,
-    )[0].sim,
+    ).items[0].sim,
   ).toBeCloseTo(1);
   cp._getValue('temp.profile_topic.value').push('parks');
   cp.storage.flush();

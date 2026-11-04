@@ -8,10 +8,10 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-it('uses the product name and initial release version for the engine and diagnostics', () => {
+it('uses the product name and current release version for the engine and diagnostics', () => {
   const debug = vi.spyOn(console, 'debug').mockImplementation(() => {});
   const engine = new ConvivialPersonalisation({ debug: true }, 'events-test');
-  expect(VERSION).toBe('0.0.1');
+  expect(VERSION).toBe('0.1.0');
   expect(window.convivialPersonalisation).toBe(engine);
   expect(window.convivialProfiler).toBeUndefined();
   expect(window.ConvivialProfiler).toBeUndefined();
@@ -20,12 +20,13 @@ it('uses the product name and initial release version for the engine and diagnos
 
 it('records impressions and clicks only when explicitly called', () => {
   const engine = new ConvivialPersonalisation({ analytics: { datalayer: 'testEvents' } }, 'events-test');
-  const rows = engine.rank([{ nid: 'one', title: 'Test item' }], [], 1, { block: 'related' });
+  const { items: rows, why } = engine.rank([{ nid: 'one', title: 'Test item' }], [], 1, { block: 'related' });
+  expect(why).toEqual([]);
   expect(window.testEvents).toBeUndefined();
   engine.impression('related');
   engine.click('related', rows[0]);
   expect(window.testEvents).toEqual([
-    { event: 'cp.block_impression', cp_block: 'related', cp_variant: 'personalised', cp_profiles: 'fallback', cp_items: 'one', cp_count: 1 },
+    { event: 'cp.block_impression', cp_block: 'related', cp_variant: 'personalised', cp_profiles: 'fallback', cp_items: 'one', cp_count: 1, cp_why: '' },
     expect.objectContaining({ event: 'cp.block_click', cp_block: 'related', cp_item: 'one', cp_profile: 'fallback', cp_position: 1 }),
   ]);
 });

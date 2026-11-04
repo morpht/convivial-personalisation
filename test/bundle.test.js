@@ -73,7 +73,8 @@ it('uses the library list processors and diagnostics through the real Drupal ini
     profile_audience: 'residents, business',
   });
   expect(
-    cp.rank([{ nid: 'one', profile_topic: 'housing' }], ['fast'], 1)[0].profile,
+    cp.rank([{ nid: 'one', profile_topic: 'housing' }], ['fast'], 1).items[0]
+      .profile,
   ).toBe('fast');
   expect(debug.mock.calls.some((call) => call[2]?.event === 'rank.score')).toBe(
     true,
@@ -135,7 +136,7 @@ it('supports registered processors without restoring temporary-value wrappers', 
       [{ nid: 'one', profile_topic: ['housing', 'transport'] }],
       ['fast'],
       1,
-    )[0].sim,
+    ).items[0].sim,
   ).toBeCloseTo(1);
 });
 
@@ -277,23 +278,23 @@ describe.each(['source', 'bundle'])(
       const logs = vi.spyOn(console, 'debug').mockImplementation(() => {});
       const cp = await flatItemEngine(implementation);
       for (const name of ['fast', 'slow']) {
-        const rows = cp.rank(
+        const result = cp.rank(
           structuredClone(flatItems),
           [name],
           5,
           comparisonOptions,
         );
+        const rows = result.items;
         const arrays = structuredClone(flatItems).map((item) => ({
           ...item,
           audiences: item.audiences.split(',').map((value) => value.trim()),
           topics: item.topics.split(',').map((value) => value.trim()),
         }));
         const legacy = cp.rank(arrays, [name], 5, comparisonOptions);
-        expect(
-          rows.map(({ id, sim, score, why }) => ({ id, sim, score, why })),
-        ).toEqual(
-          legacy.map(({ id, sim, score, why }) => ({ id, sim, score, why })),
+        expect(rows.map(({ id, sim, score }) => ({ id, sim, score }))).toEqual(
+          legacy.items.map(({ id, sim, score }) => ({ id, sim, score })),
         );
+        expect(legacy.why).toEqual(result.why);
         expect(rows).toHaveLength(5);
         expect(rows[0]).toMatchObject({
           nid: '462',
@@ -302,12 +303,12 @@ describe.each(['source', 'bundle'])(
           pos: 1,
         });
         expect(rows[0].sim).toBeCloseTo(1);
-        expect(rows[0].why).toEqual(
-          expect.arrayContaining([
-            'topic-ai',
-            'topic-personalisation',
-            'audience-editors',
-          ]),
+        expect(rows[0]).not.toHaveProperty('why');
+        // Block-level why: keys shown as keys (no labels configured here).
+        expect(result.why.length).toBeGreaterThan(0);
+        expect(result.why.length).toBeLessThanOrEqual(3);
+        expect(result.why).toEqual(
+          expect.arrayContaining(['topic-personalisation']),
         );
         rows.forEach((row) => {
           expect(row).toMatchObject(
@@ -354,13 +355,13 @@ describe.each(['source', 'bundle'])(
     it('applies the prior weight and retains source order for fallback', async () => {
       vi.spyOn(console, 'debug').mockImplementation(() => {});
       const cp = await flatItemEngine(implementation);
-      const relevant = cp.rank(
+      const { items: relevant } = cp.rank(
         structuredClone(flatItems),
         ['fast'],
         1,
         comparisonOptions,
       );
-      const ordered = cp.rank(structuredClone(flatItems), ['fast'], 1, {
+      const { items: ordered } = cp.rank(structuredClone(flatItems), ['fast'], 1, {
         ...comparisonOptions,
         priorityWeight: 1,
       });
@@ -370,7 +371,7 @@ describe.each(['source', 'bundle'])(
         profile: 'fast',
         score: 1,
       });
-      const fallback = cp.rank(
+      const { items: fallback } = cp.rank(
         structuredClone(flatItems),
         [],
         5,
@@ -392,7 +393,7 @@ describe.each(['source', 'bundle'])(
         cp.rank(structuredClone(flatItems), [], 5, {
           ...comparisonOptions,
           fallback: 'none',
-        }),
+        }).items,
       ).toEqual([]);
     });
 
@@ -415,7 +416,7 @@ describe.each(['source', 'bundle'])(
         ...options,
       };
       const before = structuredClone(inputOptions);
-      const rows = cp.rank(
+      const { items: rows } = cp.rank(
         structuredClone(flatItems),
         ['fast'],
         5,
@@ -444,7 +445,7 @@ describe.each(['source', 'bundle'])(
         key: 'topic-recommendations',
         mode: 'exclude',
       });
-      const rows = cp.rank(structuredClone(flatItems), ['fast'], 5, {
+      const { items: rows } = cp.rank(structuredClone(flatItems), ['fast'], 5, {
         priorityWeight: 0,
         diversify: false,
       });

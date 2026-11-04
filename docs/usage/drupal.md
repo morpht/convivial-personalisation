@@ -9,7 +9,7 @@ This guide assumes access to the site's library attachment, initializer and cand
 ```javascript
 const engine = window.convivialPersonalisation;
 await engine.ready;
-const ranked = engine.rank(structuredClone(items), ['interests'], 3, {
+const { items, why } = engine.rank(structuredClone(items), ['interests'], 3, {
   block: 'related-content'
 });
 ```
@@ -32,12 +32,12 @@ Use flat rows such as:
 
 ```json
 [
-  { "nid": "101", "title": "Growing a garden", "topics": "gardening|Gardening", "audiences": "residents", "url": "/guides/garden" },
-  { "nid": "102", "title": "Finding a bus route", "topics": "transport|Transport", "audiences": "residents,visitors", "url": "/guides/bus" }
+  { "nid": "101", "title": "Growing a garden", "topics": "gardening", "audiences": "residents", "url": "/guides/garden" },
+  { "nid": "102", "title": "Finding a bus route", "topics": "transport", "audiences": "residents,visitors", "url": "/guides/bus" }
 ]
 ```
 
-Set `profile.fields` and `text_fields` to the same names, and collect page metadata into matching flat temporary fields. Feed keys are ordinary library field names; the engine does not infer Drupal field machine names or aliases.
+Set `profile.fields` and `text_fields` to the same names, and collect page metadata into matching flat temporary fields. Feed keys are ordinary library field names; the engine does not infer Drupal field machine names or aliases. Key fields carry machine names only. To show vocabulary labels in `why`, export each vocabulary as a key-to-label map into `config.data`, or serve one JSON file and name it in `profile.labels_url`; see [labels for explanations](../configuration/profile.md#labels-for-explanations).
 
 Keep all metadata profilers before profile learning. If the initializer uses `order: 'weight'`, assign metadata profilers lower weights than learning profilers. Profiler weights control execution order; a `profile` processor's `weight` controls learning strength.
 

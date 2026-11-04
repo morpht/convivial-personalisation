@@ -33,10 +33,10 @@ export function dimension(engine, profiler, processor, values) {
       typeof value === 'object'
     )
       return;
-    // Meta tags may carry "id|Label" for the vector engine; the dimension keeps the id.
+    // Values are machine names (keys); labels are a presentation lookup.
     engine.profile.dimensionAdd(
       processor.storage_key,
-      String(value).split('|')[0].trim(),
+      String(value).trim(),
       amount,
     );
   });

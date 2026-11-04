@@ -6,7 +6,7 @@ When profiles are configured, the library compares a candidate's selected fields
 
 Use the same field names and category IDs for collected page data and candidate rows. For example, collect topics into `temp.topics` and supply candidates with a `topics` property. Different names are not matched automatically. See the [configuration example](../configuration/site-example.md#metadata-becomes-flat-candidate-fields).
 
-Fields listed in `text_fields` are treated as text. Other weighted fields are treated as category keys. A value such as `gardening|Gardening` provides a stable ID and a readable label; commas separate multiple values.
+Fields listed in `text_fields` are treated as text. Other weighted fields are treated as category keys: each value is a machine name such as `gardening`, and commas separate multiple values. Keys carry no labels. Readable names for `why` come from the [label settings](../configuration/profile.md#labels-for-explanations), not from the values.
 
 ## Choose relevant inputs
 

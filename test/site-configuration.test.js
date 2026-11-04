@@ -48,11 +48,11 @@ describe.each(['source', 'bundle'])('supplied site configuration (%s)', implemen
     });
     expect(engine.snapshot().profiles.fast.decay).toBe(60);
     expect(engine.snapshot().profiles.slow.decay).toBe(3600);
-    expect(result.fast[0].nid).toBe('dog-guide');
-    const fastCat = result.fast.find(item => item.nid === 'cat-guide');
-    const slowCat = result.slow.find(item => item.nid === 'cat-guide');
+    expect(result.fast.items[0].nid).toBe('dog-guide');
+    const fastCat = result.fast.items.find(item => item.nid === 'cat-guide');
+    const slowCat = result.slow.items.find(item => item.nid === 'cat-guide');
     expect(slowCat.sim).toBeGreaterThan(fastCat.sim);
-    expect(result.mixed).toHaveLength(3);
+    expect(result.mixed.items).toHaveLength(3);
     expect(engine.published('topic')).toBe('cp-topic-dogs');
     expect(engine.published('next')).toBe('intent-needs-recommendations');
     expect(localStorage.getItem('convivial_personalisation')).toBeNull();
@@ -71,7 +71,7 @@ describe.each(['source', 'bundle'])('supplied site configuration (%s)', implemen
     expect(engine.currentItem().audiences).toBe('cp-audience-cats');
     expect(engine.currentItem().campaign).toBe('cp-cats-fast');
     expect(engine.published('campaign')).toBe('cp-cats-fast');
-    expect(engine.rank(structuredClone(candidates), ['fast'], 1, { priorityWeight: 0 })[0].nid).toBe('cat-guide');
+    expect(engine.rank(structuredClone(candidates), ['fast'], 1, { priorityWeight: 0 }).items[0].nid).toBe('cat-guide');
   });
 
   it('executes the documented list pipeline and preserves both current storage formats', async () => {

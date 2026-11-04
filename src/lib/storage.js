@@ -32,16 +32,24 @@ function unwrapTemp(value) {
   return value;
 }
 
-/** Flatten metadata lists at the write boundary. */
+/**
+ * Flatten metadata lists at the write boundary. Values are keys; an object
+ * entry written by an old plugin ({id|key|value, name|label}) keeps only its
+ * key — labels are a presentation lookup and never stored with the page.
+ */
 function tempValue(raw) {
   if (!Array.isArray(raw)) return raw;
   return valuesOf(raw)
     .map((entry) => {
-      if (typeof entry !== 'object') return String(entry);
-      const term = termOf(entry);
-      return term
-        ? term.id + (term.name ? '|' + term.name : '')
-        : JSON.stringify(entry);
+      if (typeof entry !== 'object' || entry === null) return String(entry);
+      const id =
+        entry.id !== undefined
+          ? entry.id
+          : entry.key !== undefined
+            ? entry.key
+            : entry.value;
+      const term = termOf(id);
+      return term ? term.id : JSON.stringify(entry);
     })
     .join(', ');
 }

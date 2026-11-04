@@ -12,7 +12,7 @@ beforeEach(() => {
   vi.useFakeTimers();
   localStorage.clear();
   history.replaceState(null, '', '/');
-  document.head.innerHTML = '<meta name="nid" content="page-gardening"><meta name="title" content="Growing a garden"><meta name="topics" content="gardening|Gardening">';
+  document.head.innerHTML = '<meta name="nid" content="page-gardening"><meta name="title" content="Growing a garden"><meta name="topics" content="gardening">';
 });
 
 afterEach(() => {
@@ -55,15 +55,16 @@ describe.each(['source', 'bundle'])('documentation and examples (%s)', implement
     const engine = new Engine(exampleSettings.config, exampleSettings.site, { persist: false });
     await engine.collect();
     engine.fold();
-    expect(engine.currentItem()).toMatchObject({ id: 'page-gardening', topics: 'gardening|Gardening' });
+    expect(engine.currentItem()).toMatchObject({ id: 'page-gardening', topics: 'gardening' });
     expect(engine.published('preferred_topic')).toBe('gardening');
     expect(engine.profile.names()).toEqual(['interests']);
     const ranked = engine.rank(structuredClone(items), ['interests'], 3);
-    expect(ranked[0]).toMatchObject({ topics: 'gardening', profile: 'interests' });
+    expect(ranked.items[0]).toMatchObject({ topics: 'gardening', profile: 'interests' });
+    expect(ranked.why).toContain('Gardening');
     const fixed = engine.rank(structuredClone(items), { interests: 1 }, 1, { fallback: 'none' });
-    expect(fixed).toHaveLength(1);
-    expect(fixed[0]).toMatchObject({ topics: 'gardening', profile: 'interests' });
-    expect(engine.rank(structuredClone(items)).every(item => item.profile === 'fallback')).toBe(true);
+    expect(fixed.items).toHaveLength(1);
+    expect(fixed.items[0]).toMatchObject({ topics: 'gardening', profile: 'interests' });
+    expect(engine.rank(structuredClone(items)).items.every(item => item.profile === 'fallback')).toBe(true);
     expect(localStorage.getItem('convivial_personalisation')).toBeNull();
   });
 
@@ -72,18 +73,18 @@ describe.each(['source', 'bundle'])('documentation and examples (%s)', implement
     const { engine } = await runExample(engineClass(), () => 1000000);
     engine.debug = true;
     expect(engine.profile.names().sort()).toEqual(['fast', 'slow']);
-    const omitted = engine.rank(structuredClone(items));
+    const omitted = engine.rank(structuredClone(items)).items;
     expect(logs.mock.calls.find(call => call[2]?.event === 'rank.start')[2].profiles).toEqual([]);
-    const unspecified = engine.rank(structuredClone(items), null);
-    const empty = engine.rank(structuredClone(items), []);
+    const unspecified = engine.rank(structuredClone(items), null).items;
+    const empty = engine.rank(structuredClone(items), []).items;
     expect(omitted).toHaveLength(items.length);
     expect(omitted.map(item => item.nid)).toEqual(items.map(item => item.nid));
     expect(omitted.every(item => item.profile === 'fallback')).toBe(true);
     expect(omitted).toEqual(empty);
     expect(omitted).toEqual(unspecified);
-    expect(engine.rank(structuredClone(items), null, 1, { fallback: 'none' })).toEqual([]);
-    expect(engine.rank(structuredClone(items), undefined, 1, { fallback: 'none' })).toEqual([]);
-    expect(engine.rank(structuredClone(items), [], 1, { fallback: 'none' })).toEqual([]);
+    expect(engine.rank(structuredClone(items), null, 1, { fallback: 'none' }).items).toEqual([]);
+    expect(engine.rank(structuredClone(items), undefined, 1, { fallback: 'none' }).items).toEqual([]);
+    expect(engine.rank(structuredClone(items), [], 1, { fallback: 'none' }).items).toEqual([]);
     const starts = logs.mock.calls.filter(call => call[2]?.event === 'rank.start');
     expect(starts).toHaveLength(6);
     starts.forEach(call => expect(call[2].profiles).toEqual([]));
@@ -91,12 +92,15 @@ describe.each(['source', 'bundle'])('documentation and examples (%s)', implement
   });
 
   it('learns both profiles and ranks gardening first without persisting the demo', async () => {
-    const { engine, ranked } = await runExample(engineClass(), () => 1000000);
+    const { engine, result } = await runExample(engineClass(), () => 1000000);
+    const ranked = result.items;
     expect(engine.profile.names().sort()).toEqual(['fast', 'slow']);
     expect(ranked).toHaveLength(3);
     expect(ranked[0].topics).toBe('gardening');
     expect(ranked[0].profile).toBe('fast');
-    expect(ranked[0].why).toContain('gardening');
+    expect(ranked[0]).not.toHaveProperty('why');
+    expect(result.why).toContain('Gardening');
+    expect(result.count).toBe(3);
     expect(ranked.map(item => item.pos)).toEqual([1, 2, 3]);
     expect(localStorage.getItem('convivial_personalisation')).toBeNull();
     expect(items.every(item => !('score' in item))).toBe(true);
@@ -113,8 +117,8 @@ describe.each(['source', 'bundle'])('documentation and examples (%s)', implement
     await engine.collect();
     engine.fold();
     const settings = { priorityWeight: 0, removeSeenItems: false, diversify: false, fallback: 'none' };
-    const fast = engine.rank(structuredClone(items), ['fast'], 3, settings).find(item => item.topics === 'transport');
-    const slow = engine.rank(structuredClone(items), ['slow'], 3, settings).find(item => item.topics === 'transport');
+    const fast = engine.rank(structuredClone(items), ['fast'], 3, settings).items.find(item => item.topics === 'transport');
+    const slow = engine.rank(structuredClone(items), ['slow'], 3, settings).items.find(item => item.topics === 'transport');
     expect(fast.sim).toBeGreaterThan(slow.sim);
   });
 
@@ -122,13 +126,13 @@ describe.each(['source', 'bundle'])('documentation and examples (%s)', implement
     const Engine = engineClass();
     const engine = new Engine(config, 'documentation-example', { persist: false });
     await engine.collect();
-    expect(engine.rank(structuredClone(items), ['fast', 'slow'], 3).every(item => item.profile === 'fallback')).toBe(true);
+    expect(engine.rank(structuredClone(items), ['fast', 'slow'], 3).items.every(item => item.profile === 'fallback')).toBe(true);
     engine.fold();
     engine.profile.suppress({ scope: 'topics', key: 'gardening', mode: 'exclude', ttl: 3600 });
-    expect(engine.rank(structuredClone(items), [], 3).map(item => item.nid)).toEqual(['bus-routes']);
+    expect(engine.rank(structuredClone(items), [], 3).items.map(item => item.nid)).toEqual(['bus-routes']);
     engine.consent('denied');
-    expect(engine.rank(structuredClone(items), ['fast', 'slow'], 3).every(item => item.profile === 'fallback')).toBe(true);
-    expect(engine.rank(structuredClone(items), ['fast'], 3, { fallback: 'none' })).toEqual([]);
+    expect(engine.rank(structuredClone(items), ['fast', 'slow'], 3).items.every(item => item.profile === 'fallback')).toBe(true);
+    expect(engine.rank(structuredClone(items), ['fast'], 3, { fallback: 'none' }).items).toEqual([]);
     expect(engine.profile.names()).toEqual([]);
   });
 });

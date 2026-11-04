@@ -1,6 +1,6 @@
 # Introduction
 
-*Library version 0.0.1*
+*Library version 0.1.0*
 
 Clientside personalisation engine for building profiles and ranking content.
 
@@ -13,7 +13,7 @@ The library and this guide are maintained in the `convivial-personalisation` rep
 - Collect and transform values through configurable sources and processors.
 - Count interests in dimensions such as topics or audiences, record page views and searches, and store values with expiry.
 - Publish values to local storage or cookies, fill form fields and emit data-layer events through destinations.
-- Optionally learn named profiles and use them to rank candidate content supplied by the site.
+- Optionally learn named profiles, use them to rank candidate content supplied by the site, and explain each ranked block with the terms that selected it.
 
 Profiles are optional. The builder chooses their names, number and settings when the site needs learned content matching. Collection, dimensions and destinations also work independently. Persistence, cookie publication and analytics follow the configured consent controls.
 

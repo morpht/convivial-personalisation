@@ -1,6 +1,6 @@
 # Ranking and recommendations
 
-`engine.rank()` selects from the candidate rows supplied by a component and returns them in display order. Pass the names of configured profiles, or `[]` to request fallback only.
+`engine.rank()` selects from the candidate rows supplied by a component and returns a result whose `items` are in display order, together with a `why` that explains the block. Pass the names of configured profiles, or `[]` to request fallback only.
 
 ## Control selection
 
@@ -22,7 +22,11 @@ Use `fallback: 'none'` to return only profile matches. Fallback respects the act
 
 Each result includes its selecting `profile`, `score`, similarity `sim` and display position `pos`. Fallback rows use `profile: 'fallback'` and `sim: null`. Render the returned order; scores alone do not determine the final display order.
 
-With `explain: true`, `why` lists matching dimension labels. These labels help describe a match but are not a breakdown of its score. A relevant result can have an empty `why` array, for example when it matches through text rather than a collected dimension.
+## Explain a block
+
+`result.why` describes the block as a whole, for example `['Gardening', 'garden', 'growing']`. Each selected row's similarity is split back onto the terms that produced it, the positive parts are summed across the block, and the strongest terms are kept: those shared by two or more selected rows, or carrying at least `whyFloor` of the block's similarity. Keys are shown through the configured labels; text terms show the word as written. Fallback rows contribute nothing, so a block of fallback rows has an empty `why`.
+
+This works for taxonomy keys and free text alike, including feeds with only a title and description. Use `why_detail` to see each term's share and the rows it came from. Labels are presentation only and never change scores or order. See [block explanation](../reference/rank.md#block-explanation) for the exact rule and [labels](../configuration/profile.md#labels-for-explanations) for the sources.
 
 Ranking adds result fields to the supplied objects. Clone rows when another component needs them unchanged, and provide unique IDs in the candidate feed.
 

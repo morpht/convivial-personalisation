@@ -9,12 +9,17 @@ it('removes connectors and stopwords before making bigrams', () => {
   expect(tokenize([...EN_STOPWORDS].join(' '))).toEqual({
     tokens: [],
     bigrams: [],
+    surface: {},
   });
   expect(
     tokenize(
       'Housing AND or but nor so yet although unless whereas etc transport',
     ),
-  ).toEqual({ tokens: ['hous', 'transport'], bigrams: ['hous_transport'] });
+  ).toEqual({
+    tokens: ['hous', 'transport'],
+    bigrams: ['hous_transport'],
+    surface: { hous: 'housing', transport: 'transport', hous_transport: 'housing transport' },
+  });
 });
 
 it('keeps filtering stopwords supplied by synonyms or keep_short', () => {
@@ -29,7 +34,7 @@ it('keeps filtering stopwords supplied by synonyms or keep_short', () => {
         padding: 'portal',
       },
     }),
-  ).toEqual({ tokens: [], bigrams: [] });
+  ).toEqual({ tokens: [], bigrams: [], surface: {} });
 });
 
 it.each([
@@ -94,7 +99,7 @@ it('uses text_fields only for weighted fields and preserves taxonomy identities'
   expect(vectorOf({ title: 'and or' }, cfg)).toBeNull();
   const features = [];
   vectorOf(
-    { title: 'IA', topics: 'ia|Information architecture' },
+    { title: 'IA', topics: 'ia' },
     cfg,
     (event, details) => {
       if (event === 'vector.token') {
@@ -105,7 +110,6 @@ it('uses text_fields only for weighted fields and preserves taxonomy identities'
   expect(features).toEqual([
     ['architecture', 3],
     ['topics.ia', 4],
-    ['architecture', 4],
   ]);
 });
 
@@ -138,7 +142,7 @@ describe.each(['source', 'bundle'])('%s recommendation synonyms', (mode) => {
     try {
       await cp.collect();
       cp.fold();
-      const rows = cp.rank(
+      const { items: rows } = cp.rank(
         [{ nid: 'candidate', profile_title: 'Information architecture' }],
         ['fast'],
         1,

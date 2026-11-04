@@ -24,12 +24,12 @@ After the initializer has started collection, a component can use its candidate 
 ```javascript
 const engine = window.convivialPersonalisation;
 await engine.ready;
-const fast = engine.rank(structuredClone(items), ['fast'], 3);
-const slow = engine.rank(structuredClone(items), ['slow'], 3);
+const fast = engine.rank(structuredClone(items), ['fast'], 3).items;
+const slow = engine.rank(structuredClone(items), ['slow'], 3).items;
 const mixed = engine.rank(structuredClone(items), { fast: 2, slow: 1 }, 3);
 ```
 
-The first two calls select with one profile each. The third requests two result slots from `fast` and one from `slow`. Similar profiles can merge, and fallback can fill unused slots. The returned `profile`, `sim` and `pos` fields identify the selection, similarity and display position.
+The first two calls select with one profile each. The third requests two result slots from `fast` and one from `slow`; its `mixed.profiles` reports which of the two selected rows, and `mixed.why` explains the block. Similar profiles can merge, and fallback can fill unused slots. The `profile`, `sim` and `pos` fields on each row identify the selection, similarity and display position.
 
 As browsing interests change, the shorter half-life gives recent pages greater influence. The two calls can still return the same content, especially after a single page or when candidates match both profiles. Before usable learning exists, eligible candidates are returned as fallback.
 

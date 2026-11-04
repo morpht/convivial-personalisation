@@ -21,6 +21,8 @@ The singular `config.profile` object defines the fields used for content matchin
 
 Collect each page field into `temp` under exactly that name. Supply candidate rows with the same flat names. There is no automatic alias between `topics` and `profile_topic`, and no `value` wrapper around a candidate row.
 
+Fields outside `text_fields` are key fields. Each value is a machine name such as `topic-ai`, and produces the feature `topics.topic-ai`. Keys carry no labels: a value written as `topic-ai|Artificial intelligence` is not split and is hashed as one unknown key. Comma lists split at commas and trim whitespace; spaces inside a value stay part of that value. Arrays are also accepted.
+
 A supplied `fields` map replaces the default map; include every field you want. A supplied `text_fields` array also replaces its default. Weights must be positive finite numbers.
 
 ## Defaults and options
@@ -37,8 +39,38 @@ A supplied `fields` map replaces the default map; include every field you want. 
 | `keep_short` | `[]` | Useful short words retained after stopword filtering |
 | `bigrams` | `true` | Include adjacent surviving word pairs |
 | `exclude` | `{ types: [], terms: [], fields: [] }` | Page-learning and feature exclusions |
+| `labels` | `{}` | Key-to-label overrides for `why` |
+| `labels_url` | `null` | JSON file of labels, fetched once a day |
+| `why_max` | `3` | Terms returned in `rank().why` |
+| `why_exclude` | `['type', 'profile_type']` | Fields that never appear in `why` |
 
 `profile_summary`, `profile_headings` and `profile_body` have no default weights, despite appearing in the default text-field list.
+
+## Labels for explanations
+
+`rank().why` shows keys through a label lookup. Labels are presentation only: they never enter a vector, and changing them does not reset learned profiles. The lookup is built from, with later sources overriding earlier ones:
+
+| Source | Shape |
+| --- | --- |
+| `config.data` | Site vocabularies, each a `{ key: label }` map, for example `data.topics` |
+| `profile.labels_url` | JSON `[{ "key", "label" }]` or `{ key: label }`, fetched with same-origin credentials once a day and cached in `localStorage.convivial_personalisation_labels` |
+| `profile.labels` | `{ "topic-ai": "Artificial intelligence" }` overrides |
+
+```json
+{
+  "profile": {
+    "fields": { "title": 3, "topics": 4 },
+    "text_fields": ["title"],
+    "labels_url": "/personalisation/labels.json",
+    "why_max": 3
+  },
+  "data": {
+    "topics": { "gardening": "Gardening", "transport": "Transport" }
+  }
+}
+```
+
+`engine.labels()` returns the merged map and `engine.labelsReady` resolves once the file has loaded; `rank()` does not wait for it. A key with no label is shown as the key. Fields every row shares, such as `type`, explain nothing; `why_exclude` keeps them out of `why`.
 
 ## Exclusions
 

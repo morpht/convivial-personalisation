@@ -1,6 +1,7 @@
 import { runSiteExample } from './site-scenario.js';
 
-function resultTable(label, items) {
+function resultTable(label, result) {
+  const items = result.items;
   const wrapper = document.createElement('div');
   wrapper.className = 'table-wrap';
   const table = document.createElement('table');
@@ -20,7 +21,9 @@ function resultTable(label, items) {
       row.insertCell().textContent = value;
     }
   }
-  wrapper.append(table);
+  const why = document.createElement('p');
+  why.textContent = result.why.length ? `Why: ${result.why.join(', ')}` : 'Why: no profile match to explain.';
+  wrapper.append(table, why);
   return wrapper;
 }
 

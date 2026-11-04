@@ -223,10 +223,16 @@ export function explainTrace(event, d) {
       return `Order after the diversity rule: ${q(d.ids)}. This order may differ from score order because diversity is enabled.`;
     case 'rank.fallback':
       return `Candidate ${q(d.id)} fills a fallback slot because ${d.missingBefore} slots remained and fallback is enabled. Profile match required = false; fallback score = prior ${n(d.prior)} × suppression multiplier ${n(d.demotion)} = ${n(d.score)}.`;
+    case 'rank.why':
+      return `Block explanation: ${d.why.length ? q(d.why) : 'none'}. Each picked item's similarity was split onto its terms and summed across the block; ${d.considered} terms contributed positively, ${d.kept} were kept (shared by two or more items, or carrying at least ${n(d.floor)} of the block's similarity; at most ${d.max}). Labels come from the configured key → label maps; text terms show the word as written.`;
+    case 'labels.loaded':
+      return `Loaded ${d.count} key → label entries from ${q(d.url)} for presenting why. Labels never change ranking.`;
+    case 'labels.error':
+      return `Could not load labels from ${q(d.url)}: ${q(d.error?.message)}. why falls back to config.data and profile.labels, then to the raw keys.`;
     case 'rank.complete':
       return d.reason
         ? 'No results are returned because there are no candidates or no requested slots.'
-        : `Returning ${d.items.length} of ${d.requested} requested results; ${d.fallbackCount} came from fallback. Final order: ${q(d.items.map((item) => `${item.pos}: ${item.id} (${item.profile}, score ${n(item.score)})`))}. ${d.items.length < d.requested ? 'The eligible candidates and fallback setting could not fill every slot.' : 'All requested slots are filled.'}`;
+        : `Returning ${d.items.length} of ${d.requested} requested results; ${d.fallbackCount} came from fallback. Final order: ${q(d.items.map((item) => `${item.pos}: ${item.id} (${item.profile}, score ${n(item.score)})`))}. why = ${q(d.why)}. ${d.items.length < d.requested ? 'The eligible candidates and fallback setting could not fill every slot.' : 'All requested slots are filled.'}`;
     default:
       return `${event}: ${d.reason || 'Additional plugin diagnostics are available in the attached details.'}`;
   }

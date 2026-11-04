@@ -11,6 +11,12 @@
       ],
       "id_field": "nid"
     },
+    "data": {
+      "topics": {
+        "gardening": "Gardening",
+        "transport": "Transport"
+      }
+    },
     "privacy": {
       "consent_default": "granted",
       "respect_gpc": true,

@@ -5,6 +5,9 @@ export const config = {
     id_field: 'nid',
     dims: 256,
   },
+  data: {
+    topics: { gardening: 'Gardening', transport: 'Transport' },
+  },
   analytics: { events: false },
   profilers: {
     page_id: {

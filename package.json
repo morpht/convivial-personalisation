@@ -1,6 +1,6 @@
 {
   "name": "convivial-personalisation",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "private": true,
   "type": "module",
   "description": "Clientside personalisation engine for building profiles and ranking content.",

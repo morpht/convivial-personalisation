@@ -90,7 +90,10 @@ function wordParts(value) {
 /**
  * @param {string} text
  * @param {object} cfg profile config (stopwords, synonyms, keep_short, bigrams)
- * @returns {{tokens: string[], bigrams: string[]}}
+ * @returns {{tokens: string[], bigrams: string[], surface: Object<string,string>}}
+ *   `surface` maps each token (and bigram) back to the first word(s) that
+ *   produced it, so a stem like "personalis" can be shown as "personalisation"
+ *   in `why`. Presentation only; never hashed.
  */
 export function tokenize(text, cfg = {}, trace = null) {
   const synonyms = normaliseSynonyms(cfg.synonyms || {});
@@ -109,6 +112,7 @@ export function tokenize(text, cfg = {}, trace = null) {
   const raw = s.split(/[^a-z0-9'\-]+/).filter(Boolean);
 
   const words = [];
+  const shown = []; // surface word for each entry of `words`
   const discarded = trace ? [] : null;
   raw.forEach((w) => {
     wordParts(w).forEach((p) => {
@@ -132,6 +136,7 @@ export function tokenize(text, cfg = {}, trace = null) {
         return;
       }
       words.push(p);
+      shown.push(p);
     });
   });
 
@@ -139,10 +144,18 @@ export function tokenize(text, cfg = {}, trace = null) {
     canonical.has(t) || /\d/.test(t) || t.indexOf('-') > -1 ? t : stem(t),
   );
 
+  const surface = {};
+  tokens.forEach((t, i) => {
+    if (surface[t] === undefined) surface[t] = shown[i];
+  });
+
   const bigrams = [];
   if (cfg.bigrams !== false) {
-    for (let i = 1; i < tokens.length; i++)
-      bigrams.push(tokens[i - 1] + '_' + tokens[i]);
+    for (let i = 1; i < tokens.length; i++) {
+      const b = tokens[i - 1] + '_' + tokens[i];
+      bigrams.push(b);
+      if (surface[b] === undefined) surface[b] = shown[i - 1] + ' ' + shown[i];
+    }
   }
   trace?.('text.tokenize', {
     input: text,
@@ -155,7 +168,7 @@ export function tokenize(text, cfg = {}, trace = null) {
     discarded,
     bigramsEnabled: cfg.bigrams !== false,
   });
-  return { tokens, bigrams };
+  return { tokens, bigrams, surface };
 }
 
 /** Plain-text extraction from an HTML fragment (no DOM needed). */

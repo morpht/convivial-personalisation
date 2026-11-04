@@ -108,16 +108,21 @@ it('does not write empty lists or overwrite a stored list with empty input', asy
 
 it('builds the same page and candidate vectors from comma lists and legacy arrays', async () => {
   document.head.innerHTML =
-    '<meta name="topics" content=" housing|Public housing, transport|Transport planning, "><meta name="topics" content="parks|Public parks"><meta name="audiences" content="residents|Local residents, business|Small business"><meta name="title" content="Public housing, transport planning">';
-  const cp = metadataEngine();
+    '<meta name="topics" content=" housing, transport, "><meta name="topics" content="parks"><meta name="audiences" content="residents, business"><meta name="title" content="Public housing, transport planning">';
+  const cp = metadataEngine({
+    data: {
+      topics: {
+        housing: 'Public housing',
+        transport: 'Transport planning',
+        parks: 'Public parks',
+      },
+      audiences: { residents: 'Local residents', business: 'Small business' },
+    },
+  });
   await cp.collect();
   const arrayItem = {
-    profile_topic: [
-      'housing|Public housing',
-      'transport|Transport planning',
-      'parks|Public parks',
-    ],
-    profile_audience: ['residents|Local residents', 'business|Small business'],
+    profile_topic: ['housing', 'transport', 'parks'],
+    profile_audience: ['residents', 'business'],
     profile_title: 'Public housing, transport planning',
   };
   expect(cp.currentItem().profile_topic).toBe(
@@ -139,27 +144,54 @@ it('builds the same page and candidate vectors from comma lists and legacy array
     parks: 1 / 3,
   });
   cp.fold();
-  const rows = cp.rank(
+  const { items: rows, why, why_detail } = cp.rank(
     [
       { nid: 'one', ...cp.currentItem() },
       { nid: 'two', ...arrayItem },
     ],
     ['fast'],
     2,
-    { p: 0, diversify: false },
+    { p: 0, diversify: false, whyMax: 10 },
   );
   expect(rows.map((row) => row.sim)).toEqual([1, 1]);
-  expect(rows[0].why).toEqual([
-    'Public housing',
-    'Transport planning',
-    'Public parks',
-  ]);
+  expect(rows[0]).not.toHaveProperty('why');
+  // Both rows carry every term, so every term is shared and labelled from config.data.
+  expect(why).toEqual(
+    expect.arrayContaining([
+      'Public housing',
+      'Transport planning',
+      'Public parks',
+      'Local residents',
+      'Small business',
+    ]),
+  );
+  // Keys (weight 4) outrank the title words (weight 3).
+  expect(why_detail[0].kind).toBe('key');
+  expect(why_detail.every((d) => d.items.length === 2)).toBe(true);
+  // Shares are fractions of the block's total similarity (capped and
+  // de-duplicated by label, so they sum to at most 1).
+  const total = why_detail.map((d) => d.share).reduce((a, b) => a + b);
+  expect(total).toBeGreaterThan(0.8);
+  expect(total).toBeLessThanOrEqual(1);
+  // The title's "public housing" bigram de-duplicates against the key label.
+  expect(why.filter((w) => w.toLowerCase() === 'public housing')).toHaveLength(
+    1,
+  );
 });
 
 it('splits words at commas and whitespace while preserving text bigrams', () => {
   expect(tokenize('Public housing,\ttransport\nplanning')).toEqual({
     tokens: ['public', 'hous', 'transport', 'plan'],
     bigrams: ['public_hous', 'hous_transport', 'transport_plan'],
+    surface: {
+      public: 'public',
+      hous: 'housing',
+      transport: 'transport',
+      plan: 'planning',
+      public_hous: 'public housing',
+      hous_transport: 'housing transport',
+      transport_plan: 'transport planning',
+    },
   });
   expect(termKeys({ profile_topic: 'Public housing, Small business' })).toEqual(
     ['profile_topic.public housing', 'profile_topic.small business'],
@@ -178,7 +210,7 @@ it('applies exclusions and suppressions to individual terms inside comma lists',
     mode: 'exclude',
     ttl: 300,
   });
-  expect(cp.rank([item], [], 1)).toEqual([]);
+  expect(cp.rank([item], [], 1).items).toEqual([]);
 });
 
 it.each([
@@ -200,7 +232,7 @@ it.each([
         cp.profileConfig,
       ),
     );
-    const rows = cp.rank(
+    const { items: rows, why } = cp.rank(
       [
         { nid: 'title', profile_title: 'housing' },
         { nid: 'topic', profile_topic: 'transport' },
@@ -211,6 +243,8 @@ it.each([
     );
     expect(rows[0].id).toBe(expected);
     expect(rows[0].score).toBeGreaterThan(rows[1].score);
+    // The heavier field's term leads the block explanation.
+    expect(why[0]).toBe(expected === 'topic' ? 'transport' : 'housing');
   },
 );
 
@@ -222,7 +256,7 @@ it('engagement weight and decay change the profile and recommendation order', ()
   cp.profile.fold('fast', 100, housing, 1);
   now += 100;
   cp.profile.fold('fast', 100, transport, 2);
-  const rows = cp.rank(
+  const { items: rows } = cp.rank(
     [
       { nid: 'housing', profile_topic: 'housing' },
       { nid: 'transport', profile_topic: 'transport' },
@@ -243,16 +277,16 @@ it('engagement weight and decay change the profile and recommendation order', ()
 
 it('logs the full metadata, token, vector, fold and scoring flow as snapshots', async () => {
   document.head.innerHTML =
-    '<meta name="topics" content="housing|Public housing,transport|Transport planning"><meta name="audiences" content="residents|Local residents">';
+    '<meta name="topics" content="housing,transport"><meta name="audiences" content="residents"><meta name="title" content="Public housing">';
   const cp = metadataEngine({ debug: true });
   await cp.collect();
   cp.fold();
-  const [row] = cp.rank(
-    [{ nid: 'one', profile_topic: 'housing|Public housing' }],
-    ['fast'],
-    1,
-    { diversify: false },
-  );
+  const {
+    items: [row],
+    why,
+  } = cp.rank([{ nid: 'one', profile_topic: 'housing' }], ['fast'], 1, {
+    diversify: false,
+  });
   expect(logs.mock.calls.map((call) => call[2]?.event)).toEqual(
     expect.arrayContaining([
       'engine.init',
@@ -275,13 +309,17 @@ it('logs the full metadata, token, vector, fold and scoring flow as snapshots', 
       'rank.allocation',
       'rank.similarity',
       'rank.score',
+      'rank.why',
       'rank.complete',
     ]),
   );
+  expect(why).toEqual(['housing']);
+  expect(events('rank.why')[0]).toMatchObject({ why: ['housing'], kept: 1 });
+  expect(events('rank.complete')[0].message).toContain('why = ["housing"]');
   expect(
     events('vector.field').find((event) => event.field === 'profile_topic'),
   ).toMatchObject({
-    values: ['housing|Public housing', 'transport|Transport planning'],
+    values: ['housing', 'transport'],
     weight: 4,
   });
   expect(events('text.tokenize')[0]).toMatchObject({
@@ -302,9 +340,7 @@ it('logs the full metadata, token, vector, fold and scoring flow as snapshots', 
   expect(score.score).toBe(row.score);
   const tempSnapshot = events('collect.complete')[0].temp;
   cp.storage.data.temp.profile_topic = 'changed';
-  expect(tempSnapshot.profile_topic).toBe(
-    'housing|Public housing, transport|Transport planning',
-  );
+  expect(tempSnapshot.profile_topic).toBe('housing, transport');
 });
 
 it('keeps diagnostics off by default and supports explicit and runtime disabling', async () => {
@@ -339,7 +375,8 @@ it('diagnostics cannot break profiling when console logging fails', async () => 
   cp.fold();
   expect(cp.storage.data.temp.profile_topic).toBe('housing, transport');
   expect(
-    cp.rank([{ nid: 'one', profile_topic: 'housing' }], ['fast'], 1)[0].profile,
+    cp.rank([{ nid: 'one', profile_topic: 'housing' }], ['fast'], 1).items[0]
+      .profile,
   ).toBe('fast');
 });
 
@@ -503,7 +540,7 @@ it('explains token removal, short-word exceptions, synonyms and stemming', () =>
 it('explains why passing similarity still does not guarantee selection', () => {
   const cp = engine({ debug: true });
   cp.profile.fold('fast', 100, vectorOf({ profile_topic: 'housing' }));
-  const rows = cp.rank(
+  const { items: rows } = cp.rank(
     [
       { nid: 'first', profile_topic: 'housing' },
       { nid: 'second', profile_topic: 'housing' },
@@ -619,7 +656,11 @@ it('explains exclusions, unavailable profiles and fallback without claiming a ma
   });
   await cp.collect();
   cp.fold();
-  const rows = cp.rank([{ nid: 'one', profile_topic: 'housing' }], ['fast'], 1);
+  const { items: rows, why } = cp.rank(
+    [{ nid: 'one', profile_topic: 'housing' }],
+    ['fast'],
+    1,
+  );
   expect(events('page.exclusion')[0]).toMatchObject({
     excluded: true,
     reason: 'excluded term',
@@ -635,6 +676,8 @@ it('explains exclusions, unavailable profiles and fallback without claiming a ma
   expect(events('rank.complete')[0].fallbackCount).toBe(1);
   expect(rows[0].profile).toBe('fallback');
   expect(rows[0].sim).toBeNull();
+  // Fallback items are never explained.
+  expect(why).toEqual([]);
 });
 
 it('reports source failures without claiming successful processing', async () => {

@@ -12,7 +12,7 @@ Adds each numeric input to an accumulator.
 
 ## `dimension`
 
-Splits list inputs into values and increases each category counter. `id|Label` retains only the ID.
+Splits list inputs into values and increases each category counter. Values are keys; a label written into the value becomes part of the counter name.
 
 `storage_key`: dimension name. `normalize: true` divides a total contribution of one among the parsed inputs. The counters do not time-decay and are distinct from named profile vectors.
 

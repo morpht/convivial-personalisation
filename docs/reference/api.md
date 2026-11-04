@@ -26,7 +26,11 @@ Construction loads permitted storage and registers built-in plugins. It does not
 
 ## `rank(items, profiles, count, options)`
 
-Returns an array synchronously. It uses the explicitly requested profiles and this engine's history, and mutates the candidate objects. `profiles` defaults to `[]`, which requests fallback only. An incoming `null` is converted to `[]` before processing starts. Pass configured profile names to select with those profiles. See [the complete rank reference](rank.md).
+Returns a result object synchronously: `items` in display order, the block's `why` and `why_detail`, the requested `profiles` with their use and confidence, `count` and `variant`. It uses the explicitly requested profiles and this engine's history, and mutates the candidate objects. `profiles` defaults to `[]`, which requests fallback only. An incoming `null` is converted to `[]` before processing starts. Pass configured profile names to select with those profiles. See [the complete rank reference](rank.md).
+
+## `labels()` and `labelsReady`
+
+`labels()` returns the merged key-to-label map used to present `why`: `config.data` vocabularies first, then the JSON at `profile.labels_url`, then `profile.labels`, with later sources overriding earlier ones. `labelsReady` is a promise that resolves once `labels_url` has been read or when none is configured. `rank()` never waits for it; a ranking before the file arrives shows keys for the entries it lacks. See [labels for explanations](../configuration/profile.md#labels-for-explanations).
 
 ## `use(plugin)`
 
@@ -61,7 +65,7 @@ Published values are strings. `publish(key, value, where)` defaults to a local-s
 
 ## `impression()`, `click()` and `pushEvent()`
 
-After a block is rendered, call `impression(block, items)`. It emits `cp.block_impression` with block, variant, profile names, IDs and count. If items are omitted it uses the last result recorded for that block.
+After a block is rendered, call `impression(block, result)`. The second argument can be the object `rank()` returned, a plain array of rendered items, or omitted to use the last result recorded for that block. It emits `cp.block_impression` with block, variant, profile names, IDs, count and `cp_why`, the explanation labels joined by commas.
 
 The method records the items supplied by the caller. It does not observe the viewport or discover rendered elements. Pass only items actually rendered, using their normalized `id`, `profile` and `pos` values from `rank()`.
 
@@ -71,7 +75,7 @@ On interaction, call `click(block, item, position)`. It emits `cp.block_click` w
 
 ## `snapshot()` and diagnostics
 
-`snapshot()` returns a diagnostic object with version, schema, site, consent, profile confidence, decayed observation counts, half-lives, page metadata, dimension rankings, seen count, suppressions, stored values, counters, published-key names and block summaries. Treat it as read-only diagnostic data; some nested data is shallow-copied.
+`snapshot()` returns a diagnostic object with version, schema, site, consent, profile confidence, decayed observation counts, half-lives, page metadata, dimension rankings, seen count, suppressions, stored values, counters, published-key names and block summaries. Each block summary records its last `why`. Treat it as read-only diagnostic data; some nested data is shallow-copied.
 
 Set `engine.debug = true` for local traces. Browser consoles may require the Verbose level. Filter on the diagnostic prefix `[convivial-personalisation]`. Each trace carries an event name, sequence, collection generation and relevant block or ranking identifiers.
 

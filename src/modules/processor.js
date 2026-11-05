@@ -125,6 +125,8 @@ export function searchquery(engine, profiler, processor, values) {
   )
     return;
   // The query text itself is never stored: only the fact that a search ran.
+  // A log written by an earlier version is dropped the first time this runs.
+  engine.storage.del('log', processor.storage_key);
   const q = (params.get(processor.query_param) || '').trim();
   if (!q) return;
   if (processor.track === true)

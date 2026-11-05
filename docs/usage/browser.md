@@ -69,4 +69,4 @@ console.log(engine.version, engine.collected);
 console.log(engine.currentItem());
 ```
 
-The version should be `0.2.0`, `collected` should be `true`, and the page item should contain the expected ID and vector fields. Follow [build a recommendation block](recommendations.md) to supply candidates and render results. For Drupal's attachment and initializer workflow, use [the Drupal guide](drupal.md).
+The version should be `0.0.1`, `collected` should be `true`, and the page item should contain the expected ID and vector fields. Follow [build a recommendation block](recommendations.md) to supply candidates and render results. For Drupal's attachment and initializer workflow, use [the Drupal guide](drupal.md).

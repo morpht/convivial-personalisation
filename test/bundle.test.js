@@ -275,6 +275,57 @@ const comparisonOptions = {
 describe.each(['source', 'bundle'])(
   'flat JSON rank contract (%s)',
   (implementation) => {
+    it('defaults to an empty array and fallback even when example profiles have been learned', async () => {
+      const logs = vi.spyOn(console, 'debug').mockImplementation(() => {});
+      const cp = await flatItemEngine(implementation);
+      expect(cp.profile.names().sort()).toEqual(['fast', 'slow']);
+      const result = cp.rank(structuredClone(flatItems));
+      const omitted = result.items;
+      const start = logs.mock.calls.find(
+        (call) => call[2]?.event === 'rank.start',
+      )[2];
+      expect(start.profiles).toEqual([]);
+      expect(result.why).toEqual([]);
+      expect(result.count).toBe(4);
+      expect(omitted).toHaveLength(4);
+      expect(omitted.every((item) => item.profile === 'fallback')).toBe(true);
+      expect(omitted.map((item) => item.nid)).toEqual(
+        flatItems.slice(0, 4).map((item) => item.nid),
+      );
+      for (const selection of [undefined, null, []]) {
+        logs.mockClear();
+        expect(cp.rank(structuredClone(flatItems), selection).items).toEqual(
+          omitted,
+        );
+        expect(
+          logs.mock.calls.find((call) => call[2]?.event === 'rank.start')[2]
+            .profiles,
+        ).toEqual([]);
+        expect(cp.snapshot().blocks[0].profiles).toEqual([]);
+        expect(
+          cp.rank(structuredClone(flatItems), selection, 5, {
+            fallback: 'none',
+          }).items,
+        ).toEqual([]);
+      }
+    });
+
+    it('ranks with an explicitly requested arbitrary profile name', async () => {
+      vi.spyOn(console, 'debug').mockImplementation(() => {});
+      const cp = await flatItemEngine(implementation);
+      cp.profile.fold('interests', 600, cp.profile.vector('fast').v);
+      for (const selection of [['interests'], { interests: 1 }]) {
+        const { items: rows } = cp.rank(
+          structuredClone(flatItems),
+          selection,
+          1,
+          { ...comparisonOptions, fallback: 'none' },
+        );
+        expect(rows).toHaveLength(1);
+        expect(rows[0]).toMatchObject({ nid: '462', profile: 'interests' });
+      }
+    });
+
     it('ranks comma strings like legacy arrays and preserves the display fields', async () => {
       const logs = vi.spyOn(console, 'debug').mockImplementation(() => {});
       const cp = await flatItemEngine(implementation);

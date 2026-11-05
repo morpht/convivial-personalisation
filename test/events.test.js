@@ -11,7 +11,7 @@ afterEach(() => {
 it('uses the product name and current release version for the engine and diagnostics', () => {
   const debug = vi.spyOn(console, 'debug').mockImplementation(() => {});
   const engine = new ConvivialPersonalisation({ debug: true }, 'events-test');
-  expect(VERSION).toBe('0.2.0');
+  expect(VERSION).toBe('0.0.1');
   expect(window.convivialPersonalisation).toBe(engine);
   expect(window.convivialProfiler).toBeUndefined();
   expect(window.ConvivialProfiler).toBeUndefined();

@@ -1,4 +1,13 @@
-# GitBook imports the current library guide from this repository.
-root: ./docs/
-redirects:
-  concepts-and-tools/profilers-and-profiles: concepts-and-tools/profilers.md
+# GitBook site configuration. The GitBook Project directory is "docs".
+$schema: https://api.gitbook.com/gitbook-docs.yaml
+site:
+  title: Convivial Personalisation
+  structure:
+    - type: space
+      key: guide
+      title: Guide
+      path: guide
+      default: true
+      content:
+        directory: ./
+        language: en

@@ -1,4 +1,4 @@
-# GitBook imports the current library guide from this repository.
-root: ./docs/
+# GitBook space configuration for the guide in this directory.
+root: ./
 redirects:
   concepts-and-tools/profilers-and-profiles: concepts-and-tools/profilers.md

@@ -15,7 +15,7 @@ console.log(engine.snapshot());
 engine.debug = true;
 ```
 
-The version should be `0.2.0`. If the page has another version, inspect the served bundle and the site's asset cache. Enable Verbose browser-console messages and filter on the trace prefix `[convivial-personalisation]`. Reproduce one collection or ranking operation; repeated collection can learn the same page more than once.
+The version should be `0.0.1`. If the page has another version, inspect the served bundle and the site's asset cache. Enable Verbose browser-console messages and filter on the trace prefix `[convivial-personalisation]`. Reproduce one collection or ranking operation; repeated collection can learn the same page more than once.
 
 ## A configured profile is missing
 

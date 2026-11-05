@@ -2,7 +2,7 @@
 
 Clientside personalisation engine for building profiles and ranking content.
 
-Convivial Personalisation provides configurable sources, processors and destinations. It uses metatags, URL parameters, cookies, saved values in local storage, page content and other inputs; maintains dimensions and stored values; and publishes outputs to site components. Profiles are optional, with names and settings chosen by the builder. This repository contains version 0.2.0 of the library and its guide.
+Convivial Personalisation provides configurable sources, processors and destinations. It uses metatags, URL parameters, cookies, saved values in local storage, page content and other inputs; maintains dimensions and stored values; and publishes outputs to site components. Profiles are optional, with names and settings chosen by the builder. This repository contains version 0.0.1 of the library and its guide.
 
 Start by [adding the library to your site](docs/usage/browser.md), use the short [collection and publishing example](docs/getting-started/installation.md), or browse the [guide](docs/README.md). Builders choose which pipelines and, if needed, which profiles to configure.
 

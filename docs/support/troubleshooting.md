@@ -15,7 +15,7 @@ console.log(engine.snapshot());
 engine.debug = true;
 ```
 
-The version should be `0.1.0`. If the page has another version, inspect the served bundle and the site's asset cache. Enable Verbose browser-console messages and filter on the trace prefix `[convivial-personalisation]`. Reproduce one collection or ranking operation; repeated collection can learn the same page more than once.
+The version should be `0.2.0`. If the page has another version, inspect the served bundle and the site's asset cache. Enable Verbose browser-console messages and filter on the trace prefix `[convivial-personalisation]`. Reproduce one collection or ranking operation; repeated collection can learn the same page more than once.
 
 ## A configured profile is missing
 
@@ -54,10 +54,6 @@ Page metadata and candidate rows must use keys only. A value such as `topic-ai|A
 ## Missing published values
 
 Check the internal storage path, destination target settings, consent, persistence and the value returned by `engine.published()`. Internal `store` TTL and an already-published flat output are separate; run destinations to update or remove stale outputs. Cookie writing is disabled by default.
-
-## HTTP data arrives too late
-
-The `get` source returns a promise and collection awaits it before processing that pipeline. Ensure custom asynchronous sources also return their promises. Call `collect()` before components await `ready`. Look for source errors, a deferred pipeline with a fresh cache, or a newer collection cancelling stale work.
 
 ## Matching ignores an expected field
 

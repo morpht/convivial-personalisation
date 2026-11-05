@@ -22,7 +22,7 @@ Seen history records item IDs and view times. Normal page learning records the e
 
 ## Expiry
 
-`ttl` sets how long a stored value remains valid, in seconds. The `store`, language and `extreme_geoip` processors accept positive durations; omitted or non-positive numeric values mean no expiry. They also accept `'page'` for page-scoped values.
+`ttl` sets how long a stored value remains valid, in seconds. The `store` and language processors accept positive durations; omitted or non-positive numeric values mean no expiry. They also accept `'page'` for page-scoped values.
 
 Expired stored values are removed during collection. Reading a raw storage path does not trigger expiry. `store_list` has different TTL rules; use its [reference](../reference/processors.md#store_list). Suppression durations are documented in the [suppression guide](../usage/suppression.md).
 

@@ -16,12 +16,6 @@ Splits list inputs into values and increases each category counter. Values are k
 
 `storage_key`: dimension name. `normalize: true` divides a total contribution of one among the parsed inputs. The counters do not time-decay and are distinct from named profile vectors.
 
-## `extreme_geoip`
-
-Stores an input response with expiry under `fetchers.<profiler name>` and, when different, under a `storage_key` alias.
-
-`ttl`: shared expiry semantics. Use it with an HTTP source and `deferred: true` to cache a response. The source makes the request; this processor stores the response.
-
 ## `language_full`
 
 Stores the lowercased full language value, such as `en-au`.
@@ -56,7 +50,7 @@ Records the current browser URL and/or increases a counter independently of sour
 
 Reads a non-empty search query from the current URL when the path and parameter conditions match.
 
-`search_path` is a pathname substring; `query_param` names the query, and optional `exclude_param` blocks processing when present. `storage_key`, `log`, `track`, `size` control storage. Tracking increases only if the query is not in the current log, so repeated queries can count again when logging is disabled or old log entries have been removed.
+`search_path` is a pathname substring; `query_param` names the query, and optional `exclude_param` blocks processing when present. With `track: true` it increases `counters.<storage_key>` once per matching page view. The query text is never stored.
 
 ## `store`
 

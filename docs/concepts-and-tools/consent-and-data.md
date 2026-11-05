@@ -43,7 +43,7 @@ Collection can still prepare temporary metadata and in-memory outputs. Profile f
 
 `persist: false` prevents normal profile and output persistence; it is useful for examples. It is not a consent decision: an in-memory engine can still learn and rank while consent is granted. The explicit `consent()` method can store a consent preference, and denial or construction under denied consent can erase previously stored state for the same site ID.
 
-The core matching and ranking work happens in the browser and does not send profile vectors to a recommendation service. Configured `get` sources do make HTTP requests. Analytics methods and destinations can push data into the configured data layer; external tag-manager consumers may send those events elsewhere. Disabling analytics does not cancel configured HTTP sources.
+The core matching and ranking work happens in the browser and does not send profile vectors to a recommendation service. The built-in sources read the page, the URL, cookies and the browser's own settings; none of them makes an HTTP request, and the search query processor counts searches without storing the typed text. An optional `labels_url` is the only request the engine makes itself. Analytics methods and destinations can push data into the configured data layer; external tag-manager consumers may send those events elsewhere.
 
 For a demo, use a distinct site ID with `{ persist: false }` and `analytics.events: false`. This keeps new profile data in memory and disables data-layer events. Use synthetic metadata when testing.
 

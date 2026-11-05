@@ -16,12 +16,6 @@ Reads one non-empty cookie value.
 
 `name`: cookie name. This reads an existing cookie; the publication setting `privacy.cookies` controls writing cookies, not this source.
 
-## `get`
-
-Fetches a JSON resource and appends the decoded response as one input. Returns a promise that collection awaits.
-
-`resource_url`: URL. `credentials`: fetch credentials mode, default `same-origin`. Non-success responses and JSON errors are reported as source errors. Caching requires an appropriate processor and `deferred` pipeline; the source alone has no TTL.
-
 ## `httpuseragent`
 
 Appends `mobile` or `desktop` using a browser user-agent pattern.

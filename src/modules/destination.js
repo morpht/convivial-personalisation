@@ -8,8 +8,6 @@
  * settings (cookies off by default) and consent state.
  */
 
-import { getCookie } from '../lib/utility';
-
 /** Drupal emits "localstorage"/"cookie" when checked and "0" when not. */
 export const on = (v) =>
   v === true ||
@@ -128,64 +126,6 @@ export function flag(engine, profiler, destination, values) {
   const name =
     (destination.flag_prefix || '') + value + (destination.flag_suffix || '');
   publish(engine, destination, name, name);
-}
-
-export function formfiller(engine, profiler, destination, values) {
-  if (typeof document === 'undefined') return;
-  const form = document.querySelector('form' + destination.form_selector);
-  if (!form) return;
-  (destination.fields_selector || []).forEach((sel) => {
-    const [fieldName, storageName] = String(sel).split('|');
-    if (!fieldName || !storageName) return;
-    const input = form.querySelector('input[name="' + fieldName + '"]');
-    if (!input) return;
-    let v = null;
-    if (
-      destination.storage_source &&
-      on(destination.storage_source.localstorage)
-    )
-      v = engine.published(storageName);
-    if (
-      (v === null || v === undefined) &&
-      destination.storage_source &&
-      on(destination.storage_source.cookie)
-    )
-      v = getCookie(storageName);
-    if (v !== null && v !== undefined) input.value = v;
-  });
-}
-
-export function formtracker(engine, profiler, destination, values) {
-  if (typeof document === 'undefined') return;
-  const form = document.querySelector('form' + destination.form_selector);
-  if (!form || form.__cpTracked) return;
-  form.__cpTracked = true;
-  form.addEventListener(
-    'submit',
-    () => {
-      const sel =
-        'form' +
-        destination.form_selector +
-        ' input[name="' +
-        destination.field_name +
-        '"]';
-      const field = document.querySelector(sel);
-      if (!field) return;
-      let label = field.value;
-      if (field.type === 'radio' || field.type === 'checkbox') {
-        const checked = document.querySelector(sel + ':checked');
-        if (checked) label = checked.value;
-      }
-      engine.pushEvent({
-        event: 'convivialPersonalisation.event',
-        category: destination.event_category,
-        action: destination.event_action,
-        label,
-        value: 1,
-      });
-    },
-    false,
-  );
 }
 
 /** Day (0-6) and hour in an IANA timezone, e.g. "Australia/Sydney". Null if unsupported. */

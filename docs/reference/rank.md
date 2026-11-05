@@ -61,7 +61,7 @@ An empty candidate array or zero count returns `{ items: [], why: [], why_detail
 | `minSim` | `0.05` | Minimum cosine similarity for a profile-selected row |
 | `minConfidence` | `0` | Minimum usable profile confidence |
 | `mergeThreshold` | `0.9` | Merge requested profile directions at or above this cosine similarity |
-| `prior` | `'order'` | Non-personal priority: order, recency, editorial, none, or function |
+| `prior` | `'none'` | Non-personal priority: none, order, recency, editorial, or function |
 | `priorityWeight` | `0.2` | Priority's score share; remaining share is similarity |
 | `recencyHalfLife` | `2592000` | Half-life in seconds for recency priority |
 | `fallback` | `'order'` | Fill remaining slots using candidate priority and demotion; `'none'` disables padding |
@@ -82,13 +82,13 @@ Use a distinct name for each component. Reusing a name replaces its recorded res
 
 | `prior` | Behaviour |
 | --- | --- |
+| `'none'` | Neutral priority, the default: every row gets 0.5, so similarity alone orders the selection and `priorityWeight` has no effect. |
 | `'order'` | Prefer earlier rows in the supplied feed. |
 | `'recency'` | Uses the first available `changed`, `updated`, `created`, or `date`; numeric timestamps are Unix seconds. Missing or unusable dates receive 0.5. |
 | `'editorial'` | Prefer lower numeric row `weight` values. Invalid weights receive neutral priority. |
-| `'none'` | Neutral priority. Set `priorityWeight: 0` for similarity-only scoring. |
 | Function | `(item, index, total) => number`, interpreted as a priority between 0 and 1 |
 
-Fallback uses candidate priority and demotion, independent of `priorityWeight`. Choosing `prior: 'recency'` can therefore change fallback order even when `fallback` remains `'order'`.
+Fallback uses candidate priority and demotion, independent of `priorityWeight`. With the default `'none'` every candidate has the same priority, so fallback keeps feed order. Choosing `prior: 'recency'` changes fallback order even when `fallback` remains `'order'`.
 
 ## Returned rows
 

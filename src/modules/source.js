@@ -20,19 +20,6 @@ export function cookie(engine, profiler, source, values) {
 }
 
 /** Async fetch of a JSON resource. Resolves once the value is pushed. */
-export function get(engine, profiler, source, values) {
-  if (typeof fetch !== 'function' || !source.resource_url)
-    return Promise.resolve();
-  const init = { credentials: source.credentials || 'same-origin' };
-  return fetch(source.resource_url, init)
-    .then((r) =>
-      r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status)),
-    )
-    .then((json) => {
-      values.push(json);
-    });
-}
-
 export function httpuseragent(engine, profiler, source, values) {
   const ua = typeof navigator !== 'undefined' ? navigator.userAgent : '';
   values.push(

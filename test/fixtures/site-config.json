@@ -1117,18 +1117,14 @@
             "search_path": "/search",
             "query_param": "keyword",
             "exclude_param": "page",
-            "size": 5,
-            "track": false,
-            "log": true
+            "track": true
           }
         ],
         "destinations": [
           {
             "type": "copy",
-            "target_key": "cp_search_log",
-            "remove_empty": false,
-            "storage_key": "log.searchquery",
-            "stringify": true,
+            "target_key": "searches",
+            "storage_key": "counters.searchquery",
             "target_location": {
               "localstorage": "localstorage",
               "cookie": "0"

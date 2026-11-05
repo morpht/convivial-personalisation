@@ -447,6 +447,7 @@ it('logs candidate filtering, demotion and fallback decisions', () => {
     ['current', 'seen', 'blocked', 'demoted', 'normal'].map((nid) => ({ nid })),
     [],
     2,
+    { prior: 'order' },
   );
   expect(
     events('rank.candidate.skipped').map(({ id, reason }) => ({ id, reason })),

@@ -47,19 +47,6 @@ export function dimension(engine, profiler, processor, values) {
  * `deferred` check in collect() finds it (fixes D10); the storage_key is
  * kept as an alias for existing destinations.
  */
-export function extreme_geoip(engine, profiler, processor, values) {
-  values.forEach((value) => {
-    const entry = { value, expire: expiry(processor.ttl, engine.now()) };
-    engine.storage.set(
-      'fetchers',
-      profiler.name || processor.storage_key,
-      entry,
-    );
-    if (processor.storage_key && processor.storage_key !== profiler.name)
-      engine.storage.set('fetchers', processor.storage_key, entry);
-  });
-}
-
 export function language_full(engine, profiler, processor, values) {
   const expire = expiry(processor.ttl, engine.now()); // D5: no longer inverted
   values.forEach((value) =>
@@ -137,13 +124,10 @@ export function searchquery(engine, profiler, processor, values) {
     (processor.exclude_param && params.has(processor.exclude_param))
   )
     return;
+  // The query text itself is never stored: only the fact that a search ran.
   const q = (params.get(processor.query_param) || '').trim();
   if (!q) return;
-  const log = engine.storage.get('log.' + processor.storage_key) || {};
-  const isNew = !(q in log);
-  if (processor.log === true)
-    engine.storage.log(processor.storage_key, q, processor.size);
-  if (processor.track === true && isNew)
+  if (processor.track === true)
     engine.storage.inc('counters', processor.storage_key);
 }
 

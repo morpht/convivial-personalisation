@@ -6,7 +6,7 @@
 
 - Use `excludeCurrent` and `removeSeenItems` to omit the current page and recently viewed content.
 - Use `minSim` and `minConfidence` to set minimum matching requirements.
-- Use `prior` and `priorityWeight` to balance content priority with learned relevance.
+- Use `prior` and `priorityWeight` to balance content priority with learned relevance. By default `prior` is `'none'`, so similarity alone orders the selected rows.
 - Use `diversify` to vary the order of profile-selected results.
 - Use suppression rules to exclude or demote content after a visitor action.
 

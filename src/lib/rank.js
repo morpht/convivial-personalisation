@@ -48,7 +48,7 @@ export const DEFAULT_RANK_OPTIONS = {
   minSim: 0.05, // an item less similar than this is never picked by a profile
   mergeThreshold: 0.9, // profiles whose vectors agree this closely share one slate
   minConfidence: 0, // profiles below this confidence give up their slots
-  prior: 'order', // 'order' | 'recency' | 'editorial' | 'none' | fn(item, i, n) → 0..1
+  prior: 'none', // 'none' | 'order' | 'recency' | 'editorial' | fn(item, i, n) → 0..1
   priorityWeight: 0.2, // prior strength; the remaining weight goes to similarity
   recencyHalfLife: 30 * 86400,
   fallback: 'order', // 'order' pads from the view order | 'none' returns fewer
@@ -104,8 +104,10 @@ function priorOf(item, i, n, opts, now) {
       return 1 / (1 + Math.max(0, w)); // Drupal weight: lower is better
     }
     case 'order':
-    default:
       return n > 1 ? 1 - i / (n - 1) : 1;
+    default:
+      // An unknown or undefined prior behaves like the default, none.
+      return 0.5;
   }
 }
 

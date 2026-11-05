@@ -26,18 +26,6 @@ Builds an output key by surrounding an internal value with a prefix and suffix, 
 
 `storage_key`, optional `flag_prefix` and `flag_suffix`. Uses the configured target locations; it derives the key instead of using `target_key`.
 
-## `formfiller`
-
-Fills matching input fields from published values or cookies.
-
-`form_selector` is appended to `form`; `fields_selector` contains `fieldName|storageName` strings. `storage_source.localstorage` reads via `engine.published()` and `storage_source.cookie` allows a cookie fallback. Cookie reading is an explicit source choice, separate from cookie publication. It does not submit the form.
-
-## `formtracker`
-
-Attaches a submit listener once to the selected form and pushes a data-layer event using one field value.
-
-`form_selector`, `field_name`, `event_category`, `event_action`. Emits `convivialPersonalisation.event` through the consent-aware event method. Choose synthetic, non-sensitive inputs for tests.
-
 ## `officehours`
 
 Publishes `1` when any configured day/hour window matches, otherwise `0`.

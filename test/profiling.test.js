@@ -447,6 +447,7 @@ it('logs candidate filtering, demotion and fallback decisions', () => {
     ['current', 'seen', 'blocked', 'demoted', 'normal'].map((nid) => ({ nid })),
     [],
     2,
+    { prior: 'order' },
   );
   expect(
     events('rank.candidate.skipped').map(({ id, reason }) => ({ id, reason })),
@@ -459,6 +460,36 @@ it('logs candidate filtering, demotion and fallback decisions', () => {
     events('rank.fallback').find((event) => event.id === 'demoted'),
   ).toMatchObject({ demotion: 0.25, score: 0.0625 });
   expect(events('rank.complete')[0].items).toHaveLength(2);
+});
+
+it('counts searches without storing the query and drops an old search log', async () => {
+  history.replaceState(null, '', '/search?keyword=my%20name');
+  const cp = new ConvivialPersonalisation(
+    {
+      profilers: {
+        searchquery: {
+          processors: [
+            {
+              type: 'searchquery',
+              storage_key: 'searchquery',
+              search_path: '/search',
+              query_param: 'keyword',
+              track: true,
+            },
+          ],
+        },
+      },
+    },
+    'search-test',
+    { persist: false },
+  );
+  cp.storage.log('searchquery', 'earlier query', 5);
+  expect(cp.storage.get('log.searchquery')).toBeDefined();
+  await cp.collect();
+  expect(cp.storage.get('log.searchquery')).toBeUndefined();
+  expect(cp.storage.get('counters.searchquery')).toBe(1);
+  expect(JSON.stringify(cp.storage.data)).not.toContain('my name');
+  history.replaceState(null, '', '/');
 });
 
 it('tells a numbered story from comma parsing through final selection', async () => {

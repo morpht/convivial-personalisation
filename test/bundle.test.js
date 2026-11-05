@@ -265,6 +265,7 @@ async function flatItemEngine(implementation) {
 }
 
 const comparisonOptions = {
+  prior: 'order',
   priorityWeight: 0,
   diversify: false,
   removeSeenItems: false,
@@ -410,6 +411,7 @@ describe.each(['source', 'bundle'])(
       const logs = vi.spyOn(console, 'debug').mockImplementation(() => {});
       const cp = await flatItemEngine(implementation);
       const inputOptions = {
+        prior: 'order',
         diversify: false,
         removeSeenItems: false,
         excludeCurrent: false,
@@ -434,6 +436,28 @@ describe.each(['source', 'bundle'])(
       expect(resolved.options.priorityWeight).toBe(weight);
       expect(resolved.options).not.toHaveProperty('p');
       expect(inputOptions).toEqual(before);
+    });
+
+    it('defaults the prior to none, so feed position adds nothing to the score', async () => {
+      const logs = vi.spyOn(console, 'debug').mockImplementation(() => {});
+      const cp = await flatItemEngine(implementation);
+      const { items: rows } = cp.rank(structuredClone(flatItems), ['fast'], 5, {
+        diversify: false,
+        removeSeenItems: false,
+        excludeCurrent: false,
+      });
+      const resolved = logs.mock.calls
+        .map((call) => call[2])
+        .find((event) => event?.event === 'rank.options');
+      expect(resolved.options.prior).toBe('none');
+      expect(resolved.options.priorityWeight).toBe(0.2);
+      // A neutral prior of 0.5 for every row: the first row in the feed gets no boost.
+      rows
+        .filter((row) => row.profile === 'fast')
+        .forEach((row) => {
+          expect(row.score).toBeCloseTo(0.2 * 0.5 + 0.8 * row.sim);
+        });
+      expect(rows[0].nid).toBe('462');
     });
 
     it('filters flat rows by current ID, seen ID and individual comma-separated terms', async () => {

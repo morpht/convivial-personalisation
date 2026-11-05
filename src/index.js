@@ -71,7 +71,7 @@ import {
   warn,
 } from './lib/utility';
 
-export const VERSION = '0.1.0';
+export const VERSION = '0.2.0';
 const CONSENT_KEY = 'convivial_personalisation_consent';
 const LABELS_KEY = 'convivial_personalisation_labels';
 const LABELS_TTL = 86400; // seconds a fetched labels_url is reused

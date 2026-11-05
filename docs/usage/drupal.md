@@ -26,6 +26,14 @@ Use `settings.config` and `settings.site` when constructing an engine. Configure
 
 Expose the site's configuration through `drupalSettings`, for example as `drupalSettings.convivialPersonalisation`, and pass it to the initializer. Within the JSON, `config.profilers` defines the collection of objects with sources, processors and destinations.
 
+Keep the whole configuration in that JSON: the `profile` fields, the metadata profilers that fill the page item and the `profile` processors that learn from it. An initializer that merges defaults from code adds a second set of profilers beside the site's own, so each page is learned twice. The engine reads only the JSON it is given.
+
+When the site has a consent interface, give its personalisation category the same default as `config.privacy.consent_default`. With the default `granted`, the category should start enabled; otherwise a visitor who saves their preferences without changing anything sends a denial and erases the profile. See [consent and data handling](../concepts-and-tools/consent-and-data.md).
+
+## Switch the integration off
+
+A site can keep the library attached and expose a setting that turns personalisation off. When the setting is off, the initializer should neither print the runtime settings nor construct an engine, and the consent interface should not offer the personalisation category. Components then find no `window.convivialPersonalisation` and render their candidates in feed order without calling `rank()`. Check for the engine before waiting on `ready`, so a component works in both states without reading the setting itself.
+
 ## Align metadata and feed rows
 
 Use flat rows such as:

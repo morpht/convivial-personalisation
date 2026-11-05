@@ -31,11 +31,15 @@ console.log(engine.personalised, engine.consentState);
 
 Accepted states are `'granted'` and `'denied'`. An unrecognised value just returns the current state. When GPC is respected and active, the state is `'gpc'` and a grant cannot override it.
 
+Give the consent interface's personalisation control the same default as `consent_default`. With `granted`, the control should start on; a control that starts off sends `'denied'` the first time the visitor saves unchanged preferences, which erases the profile.
+
 The saved preference uses the origin-wide key `convivial_personalisation_consent`, so engines on the same origin share that saved choice. Denial erases learned state and tracked published keys and disables persistence. Granting enables future learning and allowed persistence; it does not restore erased history or automatically recollect the page.
 
 ## What happens without personalisation
 
 Collection can still prepare temporary metadata and in-memory outputs. Profile folds are skipped. Ranking uses no learned vectors, seen history, suppressions or dimension interests. The current-page filter still applies, and eligible fallback rows can be returned. With `fallback: 'none'`, there will be no results when no vectors are used.
+
+`rank()` checks consent itself, so components call it the same way in both states. Without personalisation it returns the same result shape, filled from fallback: the rows keep the candidate order, each carries `profile: 'fallback'`, `sim: null` and a flat prior score, `why` is empty and every requested profile reports `used: false`. With the default `prior: 'none'` that order is exactly the feed order.
 
 `publish()` keeps an output in memory when its local-storage target is enabled, so components should read through `published()`. Cookie publication additionally requires consent, `privacy.cookies: true`, the cookie target and engine persistence.
 

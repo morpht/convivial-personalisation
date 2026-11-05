@@ -6,7 +6,7 @@ This example uses the `interests` profile from the [configuration example](../co
 
 ## Before you start
 
-Have an initialized `window.convivialPersonalisation` whose collection has started, a JSON feed containing flat candidate rows, and a container element to render into. Each row needs a stable unique ID, a `title`, a `url` and the [configured matching fields](../configuration/profile.md). The function below takes the feed URL and container as arguments.
+Have an initialized `window.convivialPersonalisation` whose collection has started, a JSON feed containing flat candidate rows, and a container element to render into. When the site can switch personalisation off, the engine is absent; render the feed in its own order in that case rather than reading the site's setting. Each row needs a stable unique ID, a `title`, a `url` and the [configured matching fields](../configuration/profile.md). The function below takes the feed URL and container as arguments.
 
 ## Fetch, rank and render
 
@@ -59,4 +59,4 @@ Give each block a distinct name so diagnostics and event records identify the in
 
 ## Verify the block
 
-Confirm that the displayed order matches `result.items`, a first visit can show fallback content with an empty `why`, and a learned visit can return rows selected by `interests` with a `why` naming the shared terms. Check that each rendered link has the expected title and destination. With analytics enabled and consent granted, rendering and clicking should add the corresponding block events to the configured data layer. For unexpected results, use [the troubleshooting checks](../support/troubleshooting.md).
+Confirm that the displayed order matches `result.items`, a first visit can show fallback content with an empty `why`, and a learned visit can return rows selected by `interests` with a `why` naming the shared terms. Deny personalisation consent and confirm the block falls back to the feed order with no `why`. Check that each rendered link has the expected title and destination. With analytics enabled and consent granted, rendering and clicking should add the corresponding block events to the configured data layer. For unexpected results, use [the troubleshooting checks](../support/troubleshooting.md).

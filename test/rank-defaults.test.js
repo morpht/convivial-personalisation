@@ -53,3 +53,22 @@ it('requires explicit profile selection even when matching vectors are available
     expect(selected.why).toEqual(['gardening']);
   }
 });
+
+it('treats an undefined or unknown prior as none', () => {
+  const candidates = [
+    { nid: 'first', profile_topic: 'gardening' },
+    { nid: 'second', profile_topic: 'gardening' },
+  ];
+  const vector = { v: vectorOf(candidates[0]), confidence: 1 };
+  const ctx = { vectors: { fast: vector } };
+  const base = { diversify: false, removeSeenItems: false, excludeCurrent: false };
+  const none = rank(structuredClone(candidates), ['fast'], 2, { ...base, prior: 'none' }, ctx);
+  for (const prior of [undefined, 'nonsense']) {
+    const result = rank(structuredClone(candidates), ['fast'], 2, { ...base, prior }, ctx);
+    expect(result.items.map((item) => [item.id, item.score])).toEqual(
+      none.items.map((item) => [item.id, item.score]),
+    );
+  }
+  const order = rank(structuredClone(candidates), ['fast'], 2, { ...base, prior: 'order' }, ctx);
+  expect(order.items[0].score).toBeGreaterThan(none.items[0].score);
+});

@@ -104,8 +104,10 @@ function priorOf(item, i, n, opts, now) {
       return 1 / (1 + Math.max(0, w)); // Drupal weight: lower is better
     }
     case 'order':
-    default:
       return n > 1 ? 1 - i / (n - 1) : 1;
+    default:
+      // An unknown or undefined prior behaves like the default, none.
+      return 0.5;
   }
 }
 
